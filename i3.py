@@ -55,11 +55,11 @@ class i3(object):
         Uses subprocess module for executing the command.
         """
         try:
-            output = self.subprocess.check_output(cmd, stderr=self.subprocess.STDOUT)
-            output = output.decode('utf-8') # byte string
-        except self.subprocess.CalledProcessError:
-            pass
-        return output
+            output = self.subprocess.check_output(cmd)
+        except self.subprocess.CalledProcessError as error:
+            output = error.output
+        output = output.decode('utf-8') # byte string decoding
+        return output.strip()
     
     def msg(self, type, message=''):
         """
@@ -87,12 +87,10 @@ class i3(object):
     
     def get_socket_path(self):
         """
-        Get the path via i3 command, strip the output of any trailing space.
+        Get the path via i3 command.
         """
         cmd = ['i3', '--get-socketpath']
         output = self.__call_cmd(cmd)
-        if output:
-            output = output.strip()
         return output
     
     def success(self, json_msg):
