@@ -29,7 +29,6 @@ __license__ = 'GNU GPLv3'
 
 msg_types = [
     'get_workspaces',
-    'subscribe',
     'get_outputs',
     'get_tree',
     'get_marks',
