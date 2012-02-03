@@ -117,5 +117,9 @@ __globals__ = dict(globals())
 for key, var in __globals__.items():
     __i3__.__setattr__(key, var)
 
+# Removing recursive references.
+for ignored in ['i3', '__i3__']:
+    del __i3__.__dict__[ignored]
+
 # Finally we turn the module into the i3 object.
 sys.modules[__name__] = __i3__
