@@ -53,6 +53,7 @@ Output:
 	Socket path: /tmp/i3-jure.Fs0ayj/ipc-socket.2042
 
 What's great is that you can call commands like this:
+
 ```python
 msg = i3.focus('right') # will focus the right window
 if i3.success(msg):
