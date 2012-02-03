@@ -23,8 +23,8 @@ import json
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.0.1'
-__licence__ = 'GNU GPLv3'
+__version__ = '0.0.2'
+__license__ = 'GNU GPLv3'
 
 
 msg_types = [
