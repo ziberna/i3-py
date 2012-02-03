@@ -37,6 +37,71 @@ msg_types = [
 ]
 
 
+def __call_cmd__(cmd):
+    """
+    Excepts command arguments.
+    Returns output (stdout or stderr).
+    Uses subprocess module for executing the command.
+    """
+    try:
+        output = subprocess.check_output(cmd)
+    except subprocess.CalledProcessError as error:
+        output = error.output
+    output = output.decode('utf-8') # byte string decoding
+    return output.strip()
+
+
+def msg(type, message=''):
+    """
+    Excepts a message type and a message itself.
+    Talks to the i3 via i3-msg command, returns the output.
+    Uses json module for decoding output.
+    """
+    cmd = ['i3-msg', '-t', type, message]
+    output = __call_cmd__(cmd)
+    if output:
+        try:
+            output = json.loads(output)
+        except ValueError:
+            pass
+    return output
+
+
+def __function__(type, message=''):
+    """
+    Excepts a message type and a message itself.
+    Returns lambda function, which excepts arguments and adds them to the
+    message string, calls message function with the resulting arguments.
+    """
+    message = ' '.join(message.split('__'))
+    return lambda *args: msg(type, ' '.join([message] + list(args)))
+
+
+def subscribe(payload=None):
+    raise NotImplementedError("Subscribing not implemented. Sorry.")
+
+
+def get_socket_path(self):
+    """
+    Get the path via i3 command.
+    """
+    cmd = ['i3', '--get-socketpath']
+    output = __call_cmd__(cmd)
+    return output
+
+
+def success(json_msg):
+    """
+    Convenience method for checking success value.
+    Returns None if the "success" key isn't in the received message.
+    """
+    if isinstance(json_msg, dict) and 'success' in json_msg:
+        return json_msg['success']
+    return None
+    
+
+
+""" The magic starts here """
 class i3(object):
     def __getattr__(self, name):
         """
@@ -47,71 +112,12 @@ class i3(object):
             return getattr(self.__module__, name)
         except AttributeError:
             pass
-        if name in msg_types:
-            return self.func(type=name)
+        if name in self.__module__.msg_types:
+            return self.__module__.__function__(type=name)
         else:
-            return self.func(type='command', message=name)
-    
-    def __call_cmd(self, cmd):
-        """
-        Excepts command arguments.
-        Returns output (stdout or stderr).
-        Uses subprocess module for executing the command.
-        """
-        try:
-            output = subprocess.check_output(cmd)
-        except subprocess.CalledProcessError as error:
-            output = error.output
-        output = output.decode('utf-8') # byte string decoding
-        return output.strip()
-    
-    def msg(self, type, message=''):
-        """
-        Excepts a message type and a message itself.
-        Talks to the i3 via i3-msg command, returns the output.
-        Uses json module for decoding output.
-        """
-        cmd = ['i3-msg', '-t', type, message]
-        output = self.__call_cmd(cmd)
-        if output:
-            try:
-                output = json.loads(output)
-            except ValueError:
-                pass
-        return output
-    
-    def func(self, type, message=''):
-        """
-        Excepts a message type and a message itself.
-        Returns lambda function, which excepts arguments and adds them to the
-        message string, calls message function with the resulting arguments.
-        """
-        message = ' '.join(message.split('__'))
-        return lambda *args: self.msg(type, ' '.join([message] + list(args)))
-    
-    def subscribe(self, payload=None):
-        raise NotImplementedError("Subscribing not implemented. Sorry.")
-    
-    def get_socket_path(self):
-        """
-        Get the path via i3 command.
-        """
-        cmd = ['i3', '--get-socketpath']
-        output = self.__call_cmd(cmd)
-        return output
-    
-    def success(self, json_msg):
-        """
-        Convenience method for checking success value.
-        Returns None if the "success" key isn't in the received message.
-        """
-        if isinstance(json_msg, dict) and 'success' in json_msg:
-            return json_msg['success']
-        return None
+            return self.__module__.__function__(type='command', message=name)
     
 
-
-""" The magic starts here """
 # Save the module to the i3 class
 i3.__module__ = sys.modules[__name__]
 
