@@ -38,16 +38,13 @@ msg_types = [
 
 
 class i3(object):
-    def __init__(self, module):
-        self.__module = module
-    
     def __getattr__(self, name):
         """
         Turns a nonexistent attribute into a function.
         Returns the resulting function.
         """
         try:
-            return getattr(self.__module, name)
+            return getattr(self.__module__, name)
         except AttributeError:
             pass
         if name in msg_types:
@@ -114,6 +111,10 @@ class i3(object):
     
 
 
-""" The magic """
-sys.modules[__name__] = i3(sys.modules[__name__])
+""" The magic starts here """
+# Save the module to the i3 class
+i3.__module__ = sys.modules[__name__]
+
+# Turn the module into an i3 object
+sys.modules[__name__] = i3()
 
