@@ -85,6 +85,9 @@ class i3(object):
         message = ' '.join(message.split('__'))
         return lambda *args: self.msg(type, ' '.join([message] + list(args)))
     
+    def subscribe(self, payload=None):
+        raise NotImplementedError("Subscribing not implemented. Sorry.")
+    
     def get_socket_path(self):
         """
         Get the path via i3 command.
