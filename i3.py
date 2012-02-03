@@ -38,12 +38,19 @@ msg_types = [
 
 
 class i3(object):
+    def __init__(self, module):
+        self.__module = module
+    
     def __getattr__(self, name):
         """
         Turns a nonexistent attribute into a function.
         Returns the resulting function.
         """
-        if name in self.msg_types:
+        try:
+            return getattr(self.__module, name)
+        except AttributeError:
+            pass
+        if name in msg_types:
             return self.func(type=name)
         else:
             return self.func(type='command', message=name)
@@ -55,8 +62,8 @@ class i3(object):
         Uses subprocess module for executing the command.
         """
         try:
-            output = self.subprocess.check_output(cmd)
-        except self.subprocess.CalledProcessError as error:
+            output = subprocess.check_output(cmd)
+        except subprocess.CalledProcessError as error:
             output = error.output
         output = output.decode('utf-8') # byte string decoding
         return output.strip()
@@ -71,7 +78,7 @@ class i3(object):
         output = self.__call_cmd(cmd)
         if output:
             try:
-                output = self.json.loads(output)
+                output = json.loads(output)
             except ValueError:
                 pass
         return output
@@ -106,21 +113,7 @@ class i3(object):
         return None
     
 
-""" The magic starts here """
 
-# We need to create an object before applying globals to it.
-__i3__ = i3()
+""" The magic """
+sys.modules[__name__] = i3(sys.modules[__name__])
 
-# "globals" dict will change during iteration, so we need to clone it first.
-__globals__ = dict(globals())
-
-# Applying globals to the i3 object.
-for key, var in __globals__.items():
-    __i3__.__setattr__(key, var)
-
-# Removing recursive references.
-for ignored in ['i3', '__i3__']:
-    del __i3__.__dict__[ignored]
-
-# Finally we turn the module into the i3 object.
-sys.modules[__name__] = __i3__
