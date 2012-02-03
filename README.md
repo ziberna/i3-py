@@ -1,5 +1,5 @@
-Python i3 module
-================
+i3-py
+=====
 
 What is i3?
 -----------
@@ -12,8 +12,8 @@ From [i3's website](http://i3wm.org/):
 > advanced users and developers.
 
 
-So what does this Python module do?
------------------------------------
+So what does i3-py do?
+----------------------
 
 It allows you to communicate with i3 through i3-ipc with the help of i3-msg
 command. But it's all hidden away from you.
@@ -61,6 +61,12 @@ if i3.success(msg):
     print('successfully focused the right window')
 ```
 
+Or like this:
+
+```python
+msg = i3.focus__right() # __ (double underscore) is replaced with space
+```
+
 You can also communicate directly through i3-msg:
 
 ```python
@@ -74,5 +80,4 @@ You can get all available message types from `i3.msg_types`.
 
 --------------------------------------------------------------------------------
 
-Python i3 module is currently tested only with Python 3.2.2 (the latest Python
-3).
+i3-py was tested with Python 3.2.2 and 2.7.2.
