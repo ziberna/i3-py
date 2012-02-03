@@ -82,6 +82,7 @@ class i3(object):
         Returns lambda function, which excepts arguments and adds them to the
         message string, calls message function with the resulting arguments.
         """
+        message = ' '.join(message.split('__'))
         return lambda *args: self.msg(type, ' '.join([message] + list(args)))
     
     def get_socket_path(self):
