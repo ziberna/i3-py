@@ -29,7 +29,7 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 __date__ = '2012-02-04'
 __license__ = 'GNU GPLv3'
 

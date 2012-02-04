@@ -168,7 +168,7 @@ Examples
 
 Author: Jure Žiberna  
 License: GNU GPL 3  
-Version: 0.2.1
+Version: 0.2.2
 
 The socket and subscription code is more or less a fix and a cleanup of
 [Nathan Middleton's](https://github.com/thepub/i3ipc) and
