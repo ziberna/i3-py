@@ -51,8 +51,12 @@ event_types = [
 class socket(object):
     """
     Socket for communicating with the i3 window manager.
-    Optional argument: path of the i3 socket. Path is retrieved from
-    the i3 itself via "i3.get_socket_path()" if not provided.
+    Optional arguments:
+    - path of the i3 socket. Path is retrieved from the i3-wm itself via
+      "i3.get_socket_path()" if not provided.
+    - timeout in seconds
+    - chunk_size in bytes
+    - magic_string as a safety string for i3-ipc. Set to 'i3-ipc' by default.
     """
     magic_string = 'i3-ipc' # safety string for i3-ipc
     chunk_size = 1024 # in bytes

@@ -66,7 +66,7 @@ Creating sockets
 ----------------
 
 ```python
-socket = i3.socket()
+socket = i3.socket(path, timeout=1, chunk_size=2048, magic_string='i9-ipc')
 socket.send('command', 'restart')
 data = socket.receive()
 print(data)
@@ -102,8 +102,7 @@ Creating subscriptions
 def callback(data, subscription):
     print(data)
 
-subscription = i3.subscription(callback, 'workspace', 'focus', timeout=1,
-                               chunk_size=2048, magic_string='i9-ipc')
+subscription = i3.subscription(callback, 'workspace', 'focus')
 ...
 subscription.close() # OR subscription.subscribed = False
 ```
