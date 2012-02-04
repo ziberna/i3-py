@@ -27,7 +27,7 @@ import time
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __license__ = 'GNU GPLv3'
 
 
@@ -54,13 +54,10 @@ class socket(object):
     Optional argument: path of the i3 socket. Path is retrieved from
     the i3 itself via "i3.get_socket_path()" if not provided.
     """
-    magic_string = 'i3-ipc'
+    magic_string = 'i3-ipc' # safety string for i3-ipc
     chunk_size = 1024 # in bytes
     timeout = 0.5 # in seconds
-    event_mask = 1 << 31
-    event_workspace = event_mask | 0
-    event_output = event_mask | 1
-    buffer = ''.encode('utf-8')
+    buffer = ''.encode('utf-8') # byte string
     
     def __init__(self, path=None):
         if not path:
@@ -271,7 +268,7 @@ def __function__(type, message=''):
     Returns lambda function, which excepts arguments and adds them to the
     message string, calls message function with the resulting arguments.
     """
-    message = ' '.join(message.split('__'))
+    message = message.replace('__', ' ')
     return lambda *args: msg(type, ' '.join([message] + list(args)))
 
 
