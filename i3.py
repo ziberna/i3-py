@@ -22,6 +22,7 @@ import subprocess
 import json
 import socket as socks
 import struct
+import threading
 
 
 __author__ = 'Jure Ziberna'
@@ -46,6 +47,45 @@ event_types = [
 ]
 
 
+class subscribtion(threading.Thread):
+    subscribed = False
+    type_translation = {
+        'workspace': 'get_workspaces',
+        'output': 'get_outputs'
+    }
+    
+    def __init__(self, callback, event_type, event=None):
+        # Variable initialization
+        if not callable(callback):
+            raise TypeError("callback must be callable")
+        if event_type not in event_types:
+            raise ValueError("Unsupported event type")
+        self.callback = callback
+        self.event_type = event_type
+        self.event = event
+        # Socket initialization
+        self.event_socket = socket()
+        self.event_socket.subscribe(event_type, event)
+        self.data_socket = socket()
+        # Thread initialization
+        threading.Thread.__init__(self)
+        self.start()
+    
+    def run(self):
+        self.subscribed = True
+        while self.subscribed:
+            event = self.event_socket.receive()
+            while event and self.subscribed:
+                if 'change' in event and event['change'] == self.event:
+                    msg_type = self.type_translation[self.event_type]
+                    data = self.data_socket.get(msg_type)
+                    self.callback(data)
+                event = self.event_socket.receive()
+    
+    def close(self):
+        self.subscribed = False
+
+
 class socket(object):
     magic_string = 'i3-ipc'
     chunk_size = 1024 # in bytes
@@ -67,6 +107,10 @@ class socket(object):
         self.struct_header = '<%dsII' % len(self.magic_string.encode('utf-8'))
         self.struct_header_size = struct.calcsize(self.struct_header)
     
+    def get(self, msg_type, payload=''):
+        self.send(msg_type, payload)
+        return self.receive()
+    
     def subscribe(self, event_type, event=None):
         if event_type not in event_types:
             raise ValueError("Unsupported event type")
@@ -75,9 +119,7 @@ class socket(object):
         if event:
             payload.append(event)
         payload = json.dumps(payload)
-        # Send the payload with subscribe as msg_type, then receive
-        self.send('subscribe', payload)
-        return self.receive()
+        return self.get('subscribe', payload)
     
     def send(self, msg_type, payload=''):
         if msg_type not in msg_types:
