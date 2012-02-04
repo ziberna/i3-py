@@ -59,33 +59,31 @@ class EventTypeError(MessageTypeError):
         return 'Event type "%s" isn\'t available' % self.type
 
 
-def parse_type(type, types):
-    """
-    Tries to parse the given type object. Returns the i3-ipc number of the
-    given type. Raises an exception if the type doesn't exist.
-    """
-    # Choose an exception type
-    if types == msg_types:
-        Error = MessageTypeError
-    elif types == event_types:
-        Error = EventTypeError
-    else:
-        raise ValueError('"types" argument can only be i3.msg_types or ' + \
-                         'i3.event_types')
-    # Convert the given value into string and try to parse it
-    type = str(type)
-    if type in types:
-        return types.index(type)
-    # Try converting the given value into an int
+def parse_msg_type(msg_type):
     try:
-        type = int(type)
+        index = int(msg_type)
     except ValueError:
-        pass
-    # Finally, check if the value is valid. Raise an exception if it's not
-    if isinstance(type, int) and (type >= 0 and type < len(types)):
-        return type
+        index = -1
+    if index >= 0 and msg_type < len(msg_types):
+        return index
+    msg_type = str(msg_type)
+    if msg_type in msg_types:
+        return msg_types.index(msg_type)
     else:
-        raise Error(type)
+        raise MessageTypeError(msg_type)
+
+def parse_event_type(event_type):
+    try:
+        index = int(event_type)
+    except ValueError:
+        index = -1
+    if index >= 0 and index < len(event_types):
+        return event_types[index]
+    event_type = str(event_type)
+    if event_type in event_types:
+        return event_type
+    else:
+        raise EventTypeError(event_type)
 
 
 class socket(object):
@@ -134,7 +132,7 @@ class socket(object):
         """
         Subscribes to an event. Returns data on first occurrence.
         """
-        event_type = parse_type(event_type, event_types)
+        event_type = parse_event_type(event_type)
         # Create JSON payload from given event type and event
         payload = [event_type]
         if event:
@@ -147,7 +145,7 @@ class socket(object):
         Sends the given message type with given message by packing them
         and continuously sending bytes from the packed message.
         """
-        msg_type = parse_type(msg_type, msg_types)
+        msg_type = parse_msg_type(msg_type)
         message = self.pack(msg_type, payload)
         # Continuously send the bytes from the message
         self.socket.sendall(message)
@@ -180,7 +178,7 @@ class socket(object):
         msg_magic = self.magic_string
         # Get the byte count instead of number of characters
         msg_length = len(payload.encode('utf-8'))
-        msg_type = parse_type(msg_type, msg_types)
+        msg_type = parse_msg_type(msg_type)
         # "struct.pack" returns byte string, decoding it for concatenation
         msg_length = struct.pack('I', msg_length).decode('utf-8')
         msg_type = struct.pack('I', msg_type).decode('utf-8')
@@ -241,7 +239,7 @@ class subscription(threading.Thread):
         # Variable initialization
         if not callable(callback):
             raise TypeError('callback must be callable')
-        event_type = parse_type(event_type, event_types)
+        event_type = parse_event_type(event_type)
         self.callback = callback
         self.event_type = event_type
         self.event = event
@@ -272,7 +270,6 @@ class subscription(threading.Thread):
             elif event:
                 self.callback(event, self)
             event = self.event_socket.receive()
-        self.subscribed = False
     
     def close(self):
         """
