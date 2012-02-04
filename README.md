@@ -120,7 +120,7 @@ want to provide already created sockets with non-default settings.
 
 Author: Jure Žiberna  
 License: GNU GPL 3  
-Version: 0.1.3
+Version: 0.1.4
 
 The socket and subscription code is more or less a fix and a cleanup of
 [Nathan Middleton's](https://github.com/thepub/i3ipc) and
