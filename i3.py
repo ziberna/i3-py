@@ -106,10 +106,10 @@ class socket(object):
     - chunk_size in bytes
     - magic_string as a safety string for i3-ipc. Set to 'i3-ipc' by default.
     """
-    magic_string = 'i3-ipc' # safety string for i3-ipc
-    chunk_size = 1024 # in bytes
-    timeout = 0.5 # in seconds
-    buffer = ''.encode('utf-8') # byte string
+    magic_string = 'i3-ipc'  # safety string for i3-ipc
+    chunk_size = 1024  # in bytes
+    timeout = 0.5  # in seconds
+    buffer = b''  # byte string
     
     def __init__(self, path=None, timeout=None, chunk_size=None,
                  magic_string=None):
@@ -125,10 +125,16 @@ class socket(object):
         # Socket initialization
         self.socket = socks.socket(socks.AF_UNIX, socks.SOCK_STREAM)
         self.socket.settimeout(self.timeout)
-        self.socket.connect(self.path)
+        self.connect()
         # Struct format initialization, length of magic string is in bytes
         self.struct_header = '<%dsII' % len(self.magic_string.encode('utf-8'))
         self.struct_header_size = struct.calcsize(self.struct_header)
+    
+    def connect(self):
+        """
+        Connects the socket to socket path.
+        """
+        self.socket.connect(self.path)
     
     def get(self, msg_type, payload=''):
         """
@@ -169,16 +175,13 @@ class socket(object):
             data = self.socket.recv(self.chunk_size)
             msg_magic, msg_length, msg_type = self.unpack_header(data)
             msg_size = self.struct_header_size + msg_length
-            # Keep receiving data until the whole message is through
+            # Keep receiving data until the whole message gets through
             while len(data) < msg_size:
                 data += self.socket.recv(msg_length)
             data = self.buffer + data
             return self.unpack(data)
         except socks.timeout:
-            try:
-                return self.buffer.decode('utf-8')
-            except UnicodeDecodeError:
-                return None
+            return None
     
     def pack(self, msg_type, payload):
         """
@@ -300,7 +303,7 @@ def __call_cmd__(cmd):
         output = subprocess.check_output(cmd)
     except subprocess.CalledProcessError as error:
         output = error.output
-    output = output.decode('utf-8') # byte string decoding
+    output = output.decode('utf-8')  # byte string decoding
     return output.strip()
 
 __socket__ = None
@@ -367,7 +370,6 @@ def success(json_msg):
     return None
 
 
-
 """ The magic starts here """
 class i3(types.ModuleType):
     def __init__(self, module):
@@ -392,4 +394,3 @@ class i3(types.ModuleType):
 
 # Turn the module into an i3 ModuleType object
 sys.modules[__name__] = i3(sys.modules[__name__])
-
