@@ -95,7 +95,7 @@ i3.msg('command', 'restart') # equivalent to i3.restart()
 ```
 
 
-Creating subscribtions
+Creating subscriptions
 ----------------------
 
 ```python
@@ -127,9 +127,9 @@ The socket and subscription code is more or less a fix and a cleanup of
 [David Bronke's](https://github.com/whitelynx/i3ipc) Python implementation of
 i3-ipc.
 
-At first I've implemented communicating to i3 via shell command. That didn't
-work for subscriptions, so I decided to rewrite some of the bits of the above
-project and fix much of the socket implementation.
+i3-py was communicating to i3 via shell command at first. That didn't work for
+subscriptions, so i3-py needed its own sockets. In result, much of the socket
+implementation of the above project was rewritten and fixed for use in i3-py.
 
 
 --------------------------------------------------------------------------------
