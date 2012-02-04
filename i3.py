@@ -23,6 +23,7 @@ import json
 import socket as socks
 import struct
 import threading
+import time
 
 
 __author__ = 'Jure Ziberna'
@@ -47,14 +48,15 @@ event_types = [
 ]
 
 
-class subscribtion(threading.Thread):
+class subscription(threading.Thread):
     subscribed = False
     type_translation = {
         'workspace': 'get_workspaces',
         'output': 'get_outputs'
     }
     
-    def __init__(self, callback, event_type, event=None):
+    def __init__(self, callback, event_type, event=None, event_socket=None,
+                 data_socket=None):
         # Variable initialization
         if not callable(callback):
             raise TypeError("callback must be callable")
@@ -64,9 +66,13 @@ class subscribtion(threading.Thread):
         self.event_type = event_type
         self.event = event
         # Socket initialization
-        self.event_socket = socket()
+        if not event_socket:
+            event_socket = socket()
+        self.event_socket = event_socket
         self.event_socket.subscribe(event_type, event)
-        self.data_socket = socket()
+        if not data_socket:
+            data_socket = socket()
+        self.data_socket = data_socket
         # Thread initialization
         threading.Thread.__init__(self)
         self.start()
@@ -187,20 +193,20 @@ def __call_cmd__(cmd):
     output = output.decode('utf-8') # byte string decoding
     return output.strip()
 
+__socket__ = None
+def default_socket():
+    global __socket__
+    if not __socket__:
+        __socket__ = socket()
+    return __socket__
 
 def msg(type, message=''):
     """
     Excepts a message type and a message itself.
-    Talks to the i3 via i3-msg command, returns the output.
-    Uses json module for decoding output.
+    Talks to the i3 via socket.
+    Returns the output from the socket.
     """
-    cmd = ['i3-msg', '-t', type, message]
-    output = __call_cmd__(cmd)
-    if output:
-        try:
-            output = json.loads(output)
-        except ValueError:
-            pass
+    output = default_socket().get(type, message)
     return output
 
 
@@ -214,9 +220,16 @@ def __function__(type, message=''):
     return lambda *args: msg(type, ' '.join([message] + list(args)))
 
 
-def subscribe(payload=None):
-    raise NotImplementedError("Subscribing not implemented. Sorry.")
-
+def subscribe(event_type, event):
+    def callback(data):
+        print(data)
+    subscript = subscription(callback, event_type, event,
+                             data_socket=default_socket())
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        subscript.close()
 
 def get_socket_path():
     """
