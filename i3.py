@@ -47,6 +47,17 @@ event_types = [
     'output',
 ]
 
+def parse_type(type, type_list):
+    if isinstance(type, str):
+        try:
+            type = int(type)
+        except ValueError:
+            pass
+    if isinstance(type, int) and (type >= 0 and type < len(type_list)):
+        return type_list[type]
+    else:
+        return str(type).lower()
+
 
 class MessageTypeError(Exception):
     def __init__(self, type):
@@ -105,6 +116,7 @@ class socket(object):
         """
         Subscribes to an event. Returns data on first occurrence.
         """
+        event_type = parse_type(event_type, event_types)
         if event_type not in event_types:
             raise EventTypeError(event_type)
         # Create JSON payload from given event type and event
@@ -119,6 +131,7 @@ class socket(object):
         Sends the given message type with given message by packing them
         and continuously sending bytes from the packed message.
         """
+        msg_type = parse_type(msg_type, msg_types)
         if msg_type not in msg_types:
             raise MessageTypeError(msg_type)
         message = self.pack(msg_type, payload)
@@ -150,6 +163,7 @@ class socket(object):
         msg_magic = self.magic_string
         # Get the byte count instead of number of characters
         msg_length = len(payload.encode('utf-8'))
+        msg_type = parse_type(msg_type, msg_types)
         if msg_type not in msg_type:
             raise MessageTypeError(msg_type)
         msg_type = msg_types.index(msg_type)
@@ -213,6 +227,7 @@ class subscription(threading.Thread):
         # Variable initialization
         if not callable(callback):
             raise TypeError("callback must be callable")
+        event_type = parse_type(event_type, event_types)
         if event_type not in event_types:
             raise EventTypeError(event_type)
         self.callback = callback
@@ -346,7 +361,7 @@ class i3(object):
             return getattr(self.__module__, name)
         except AttributeError:
             pass
-        if name in self.__module__.msg_types:
+        if name.lower() in self.__module__.msg_types:
             return self.__module__.__function__(type=name)
         else:
             return self.__module__.__function__(type='command', message=name)
