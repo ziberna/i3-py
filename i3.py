@@ -70,7 +70,7 @@ def parse_msg_type(msg_type):
         index = int(msg_type)
     except ValueError:
         index = -1
-    if index >= 0 and msg_type < len(msg_types):
+    if index >= 0 and index < len(msg_types):
         return index
     msg_type = str(msg_type)
     if msg_type in msg_types:
