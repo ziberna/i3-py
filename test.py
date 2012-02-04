@@ -1,6 +1,7 @@
 import i3
 import unittest
-
+import platform
+py3 = platform.python_version_tuple() > ('3',)
 
 class ParseTest(unittest.TestCase):
     def setUp(self):
@@ -13,7 +14,7 @@ class ParseTest(unittest.TestCase):
             msg_types.append(i3.parse_msg_type(msg_type))
         for index in range(-1, len(msg_types) - 1):
             self.assertEqual(msg_types[index], msg_types[index+1])
-            self.assertTrue(isinstance(msg_types[index], int))
+            self.assertIsInstance(msg_types[index], int)
     
     def test_event_parse(self):
         event_types = []
@@ -21,7 +22,7 @@ class ParseTest(unittest.TestCase):
             event_types.append(i3.parse_event_type(event_type))
         for index in range(-1, len(event_types) - 1):
             self.assertEqual(event_types[index], event_types[index+1])
-            self.assertTrue(isinstance(event_types[index], str))
+            self.assertIsInstance(event_types[index], str)
     
     def test_msg_error(self):
         border_lower = -1
@@ -49,8 +50,28 @@ class SocketTest(unittest.TestCase):
         for workspace in workspaces:
             self.assertTrue('name' in workspace)
     
+    def test_pack(self):
+        packed = i3.default_socket().pack(0, "haha")
+        if py3:
+            self.assertIsInstance(packed, bytes)
+    
+
+class GeneralTest(unittest.TestCase):
+    def setUp(self):
+        pass
+    
+    def test_getattr(self):
+        func = i3.some_attribute
+        self.assertTrue(callable(func))
+        socket = i3.default_socket()
+        self.assertIsInstance(socket, i3.socket)
+    
+    def test_success(self):
+        data = {'success': True}
+        self.assertTrue(i3.success(data))
+    
 
 if __name__ == '__main__':
-    for Test in [ParseTest, SocketTest]:
+    for Test in [ParseTest, SocketTest, GeneralTest]:
         suite = unittest.TestLoader().loadTestsFromTestCase(Test)
         unittest.TextTestRunner(verbosity=2).run(suite)
