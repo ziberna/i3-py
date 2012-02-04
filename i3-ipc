@@ -28,16 +28,20 @@ import i3
 DESCRIPTION = 'i3-ipc %s (%s).' % (i3.__version__, i3.__date__)
 DESCRIPTION += ' Implemented in Python.'
 
-
+# Dictionary of command-line help messages
 HELP = {
-    'socket': """custom path to an i3 socket file""",
-    'type': """message type in text form (e.g. "get_tree")""",
-    'timeout': """seconds before socket times out, floating point values allowed""",
-    'message': """message or "payload" to send, can be multiple strings""",
+    'socket': "custom path to an i3 socket file",
+    'type': "message type in text form (e.g. \"get_tree\")",
+    'timeout': "seconds before socket times out, floating point values allowed",
+    'message': "message or \"payload\" to send, can be multiple strings",
 }
 
 
 def parse():
+    """
+    Creates argument parser for parsing command-line arguments. Returns parsed
+    arguments in a form of a namespace.
+    """
     # Setting up argument parses
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('-s', metavar='<socket>', dest='socket', type=str, default=None, help=HELP['socket'])
@@ -52,6 +56,9 @@ def parse():
 
 
 def main(socket, type, timeout, message):
+    """
+    Excepts arguments and evaluates them.
+    """
     if not socket:
         socket = i3.get_socket_path()
     elif not os.path.exists(socket):
@@ -74,9 +81,9 @@ def main(socket, type, timeout, message):
             else:
                 event = ''
         else:
-            # let if fail, it will fail early
+            # Let if fail, it will fail early
             event_type = ''
-    
+    # Let unavailable message/event types fail, exceptions will handle the rest
     try:
         if type == 'subscribe':
             i3.subscribe(event_type, event)
