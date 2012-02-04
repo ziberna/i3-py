@@ -27,7 +27,8 @@ import time
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
+__date__ = '2012-02-04'
 __license__ = 'GNU GPLv3'
 
 
@@ -41,11 +42,21 @@ msg_types = [
     'get_bar_config',
 ]
 
-
 event_types = [
     'workspace',
     'output',
 ]
+
+
+class MessageTypeError(Exception):
+    def __init__(self, type):
+        self.type = type
+    def __str__(self):
+        return 'Message type "%s" isn\'t available' % self.type
+
+class EventTypeError(MessageTypeError):
+    def __str__(self):
+        return 'Event type "%s" isn\'t available' % self.type
 
 
 class socket(object):
@@ -95,7 +106,7 @@ class socket(object):
         Subscribes to an event. Returns data on first occurrence.
         """
         if event_type not in event_types:
-            raise ValueError("Unsupported event type")
+            raise EventTypeError(event_type)
         # Create JSON payload from given event type and event
         payload = [event_type]
         if event:
@@ -109,7 +120,7 @@ class socket(object):
         and continuously sending bytes from the packed message.
         """
         if msg_type not in msg_types:
-            raise ValueError("Unsupported message type")
+            raise MessageTypeError(msg_type)
         message = self.pack(msg_type, payload)
         # Continuously send the bytes from message
         self.socket.sendall(message)
@@ -129,7 +140,7 @@ class socket(object):
             data = self.buffer + data
             return self.unpack(data)
         except socks.timeout:
-            return self.buffer
+            return self.buffer.decode('utf-8')
     
     def pack(self, msg_type, payload):
         """
@@ -139,6 +150,8 @@ class socket(object):
         msg_magic = self.magic_string
         # Get the byte count instead of number of characters
         msg_length = len(payload.encode('utf-8'))
+        if msg_type not in msg_type:
+            raise MessageTypeError(msg_type)
         msg_type = msg_types.index(msg_type)
         # "struct.pack" returns byte string, decoding it for concatenation
         msg_length = struct.pack('I', msg_length).decode('utf-8')
@@ -201,7 +214,7 @@ class subscription(threading.Thread):
         if not callable(callback):
             raise TypeError("callback must be callable")
         if event_type not in event_types:
-            raise ValueError("Unsupported event type")
+            raise EventTypeError(event_type)
         self.callback = callback
         self.event_type = event_type
         self.event = event
@@ -223,14 +236,16 @@ class subscription(threading.Thread):
         Calls the given callback method with data and the object itself.
         """
         self.subscribed = True
-        while self.subscribed:
+        event = self.event_socket.receive()
+        while event and self.subscribed:
+            if 'change' in event and event['change'] == self.event:
+                msg_type = self.type_translation[self.event_type]
+                data = self.data_socket.get(msg_type)
+                self.callback(data, self)
+            else:
+                self.callback(event, self)
             event = self.event_socket.receive()
-            while event and self.subscribed:
-                if 'change' in event and event['change'] == self.event:
-                    msg_type = self.type_translation[self.event_type]
-                    data = self.data_socket.get(msg_type)
-                    self.callback(data, self)
-                event = self.event_socket.receive()
+        self.subscribed = False
     
     def close(self):
         """
@@ -283,14 +298,15 @@ def __function__(type, message=''):
     return lambda *args: msg(type, ' '.join([message] + list(args)))
 
 
-def subscribe(event_type, event):
+def subscribe(event_type, event, callback=None):
     """
     Excepts an event_type and event itself.
     Creates a new subscription, prints data on every event until
     KeyboardInterrupt (^C) is raised.
     """
-    def callback(data, subscript):
-        print(data)
+    if not callback:
+        def callback(data, subscript):
+            print(data)
     subscript = subscription(callback, event_type, event,
                              data_socket=default_socket())
     try:
