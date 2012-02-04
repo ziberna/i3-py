@@ -27,7 +27,7 @@ import time
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 __date__ = '2012-02-04'
 __license__ = 'GNU GPLv3'
 
@@ -153,7 +153,10 @@ class socket(object):
             data = self.buffer + data
             return self.unpack(data)
         except socks.timeout:
-            return self.buffer.decode('utf-8')
+            try:
+                return self.buffer.decode('utf-8')
+            except UnicodeDecodeError:
+                return None
     
     def pack(self, msg_type, payload):
         """
@@ -253,7 +256,7 @@ class subscription(threading.Thread):
         self.subscribed = True
         event = self.event_socket.receive()
         while self.subscribed:
-            if 'change' in event and event['change'] == self.event:
+            if event and 'change' in event and event['change'] == self.event:
                 msg_type = self.type_translation[self.event_type]
                 data = self.data_socket.get(msg_type)
                 self.callback(data, self)

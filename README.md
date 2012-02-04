@@ -168,7 +168,7 @@ Examples
 
 Author: Jure Žiberna  
 License: GNU GPL 3  
-Version: 0.2.0
+Version: 0.2.1
 
 The socket and subscription code is more or less a fix and a cleanup of
 [Nathan Middleton's](https://github.com/thepub/i3ipc) and
@@ -181,7 +181,7 @@ implementation of the above project was rewritten and fixed for use in i3-py.
 
 
 See [i3-wm's ipc page](http://i3wm.org/docs/ipc.html) for more information about
-all features of.
+all features.
 
 --------------------------------------------------------------------------------
 
