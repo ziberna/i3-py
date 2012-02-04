@@ -105,6 +105,7 @@ class socket(object):
         """
         Subscribes to an event. Returns data on first occurrence.
         """
+        event_type = event_type.lower()
         if event_type not in event_types:
             raise EventTypeError(event_type)
         # Create JSON payload from given event type and event
