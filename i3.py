@@ -330,7 +330,7 @@ class i3(object):
             return getattr(self.__module__, name)
         except AttributeError:
             pass
-        if name in self.__module__.msg_types and name is not 'command':
+        if name in self.__module__.msg_types:
             return self.__module__.__function__(type=name)
         else:
             return self.__module__.__function__(type='command', message=name)
