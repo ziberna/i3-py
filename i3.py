@@ -25,6 +25,8 @@ import struct
 import threading
 import time
 
+import types
+
 
 __author__ = 'Jure Ziberna'
 __version__ = '0.2.1'
@@ -321,7 +323,6 @@ def msg(type, message=''):
     output = default_socket().get(type, message)
     return output
 
-
 def __function__(type, message=''):
     """
     Excepts a message type and message itself.
@@ -330,7 +331,6 @@ def __function__(type, message=''):
     """
     message = message.replace('__', ' ')
     return lambda *args: msg(type, ' '.join([message] + list(args)))
-
 
 def subscribe(event_type, event, callback=None):
     """
@@ -357,7 +357,6 @@ def get_socket_path():
     output = __call_cmd__(cmd)
     return output
 
-
 def success(json_msg):
     """
     Convenience method for checking success value.
@@ -366,11 +365,16 @@ def success(json_msg):
     if isinstance(json_msg, dict) and 'success' in json_msg:
         return json_msg['success']
     return None
-    
+
 
 
 """ The magic starts here """
-class i3(object):
+class i3(types.ModuleType):
+    def __init__(self, module):
+        self.__module__ = module
+        for attr in ["__builtins__", "__doc__", "__name__", "__package__"]:
+            setattr(self, attr, getattr(module, attr))
+    
     def __getattr__(self, name):
         """
         Turns a nonexistent attribute into a function.
@@ -386,9 +390,6 @@ class i3(object):
             return self.__module__.__function__(type='command', message=name)
     
 
-# Save the module to the i3 class
-i3.__module__ = sys.modules[__name__]
-
-# Turn the module into an i3 object
-sys.modules[__name__] = i3()
+# Turn the module into an i3 ModuleType object
+sys.modules[__name__] = i3(sys.modules[__name__])
 
