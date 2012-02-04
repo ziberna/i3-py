@@ -48,7 +48,139 @@ event_types = [
 ]
 
 
+class socket(object):
+    """
+    Socket for communicating with the i3 window manager.
+    Optional argument: path of the i3 socket. Path is retrieved from
+    the i3 itself via "i3.get_socket_path()" if not provided.
+    """
+    magic_string = 'i3-ipc'
+    chunk_size = 1024 # in bytes
+    timeout = 0.5 # in seconds
+    event_mask = 1 << 31
+    event_workspace = event_mask | 0
+    event_output = event_mask | 1
+    buffer = ''.encode('utf-8')
+    
+    def __init__(self, path=None):
+        if not path:
+            path = get_socket_path()
+        self.path = path
+        # Socket initialization
+        self.socket = socks.socket(socks.AF_UNIX, socks.SOCK_STREAM)
+        self.socket.settimeout(self.timeout)
+        self.socket.connect(self.path)
+        # Struct format initialization, length of magic string is in bytes
+        self.struct_header = '<%dsII' % len(self.magic_string.encode('utf-8'))
+        self.struct_header_size = struct.calcsize(self.struct_header)
+    
+    def get(self, msg_type, payload=''):
+        """
+        Convenience method, calls "socket.send(msg_type, payload)" and
+        returns data from "socket.recieve()".
+        """
+        self.send(msg_type, payload)
+        return self.receive()
+    
+    def subscribe(self, event_type, event=None):
+        """
+        Subscribes to an event. Returns data on first occurrence.
+        """
+        if event_type not in event_types:
+            raise ValueError("Unsupported event type")
+        # Create JSON payload from given event type and event
+        payload = [event_type]
+        if event:
+            payload.append(event)
+        payload = json.dumps(payload)
+        return self.get('subscribe', payload)
+    
+    def send(self, msg_type, payload=''):
+        """
+        Sends the given message type with given message by packing them
+        and continuously sending bytes from the packed message.
+        """
+        if msg_type not in msg_types:
+            raise ValueError("Unsupported message type")
+        message = self.pack(msg_type, payload)
+        # Continuously send the bytes from message
+        self.socket.sendall(message)
+    
+    def receive(self):
+        """
+        Tries to receive a data. Unpacks the received byte string if
+        successful. Returns the current buffer on failure.
+        """
+        try:
+            data = self.socket.recv(self.chunk_size)
+            msg_magic, msg_length, msg_type = self.unpack_header(data)
+            msg_size = self.struct_header_size + msg_length
+            # Receive data until whole message is through
+            while len(data) < msg_size:
+                data += self.socket.recv(msg_length)
+            data = self.buffer + data
+            return self.unpack(data)
+        except socks.timeout:
+            self.buffer
+    
+    def pack(self, msg_type, payload):
+        """
+        Packs the given message type and payload. Turns the resulting
+        message into a byte string.
+        """
+        msg_magic = self.magic_string
+        # Get the byte count instead of number of characters
+        msg_length = len(payload.encode('utf-8'))
+        msg_type = msg_types.index(msg_type)
+        # "struct.pack" returns byte string, decoding it for concatenation
+        msg_length = struct.pack('I', msg_length).decode('utf-8')
+        msg_type = struct.pack('I', msg_type).decode('utf-8')
+        message = '%s%s%s%s' % (msg_magic, msg_length, msg_type, payload)
+        # Encoding the message back to byte string
+        return message.encode('utf-8')
+    
+    def unpack(self, data):
+        """
+        Unpacks the given byte string and parses the result from JSON.
+        Returns None on failure and saves data into "self.buffer".
+        """
+        data_size = len(data)
+        msg_magic, msg_length, msg_type = self.unpack_header(data)
+        msg_size = self.struct_header_size + msg_length
+        # Message shouldn't be any longer than the data
+        if data_size >= msg_size:
+            payload = data[self.struct_header_size:msg_size].decode('utf-8')
+            payload = json.loads(payload)
+            self.buffer = data[msg_size:]
+            return payload
+        else:
+            self.buffer = data
+            return None
+    
+    def unpack_header(self, data):
+        """
+        Unpacks the header of given byte string.
+        """
+        return struct.unpack(self.struct_header, data[:self.struct_header_size])
+    
+    def close(self):
+        """
+        Closes the socket.
+        """
+        self.socket.close()
+    
+
 class subscription(threading.Thread):
+    """
+    Creates a new subscription and runs a listener loop. Calls the
+    callback on event.
+    Example parameters:
+    callback = lambda data, subscript: print(data)
+    event_type = 'workspace'
+    event = 'focus'
+    event_socket = <socket object>
+    data_socket = <socket object>
+    """
     subscribed = False
     type_translation = {
         'workspace': 'get_workspaces',
@@ -78,6 +210,10 @@ class subscription(threading.Thread):
         self.start()
     
     def run(self):
+        """
+        Runs a listener loop until self.subscribed is set to False.
+        Calls the given callback method with data and the object itself.
+        """
         self.subscribed = True
         while self.subscribed:
             event = self.event_socket.receive()
@@ -85,99 +221,14 @@ class subscription(threading.Thread):
                 if 'change' in event and event['change'] == self.event:
                     msg_type = self.type_translation[self.event_type]
                     data = self.data_socket.get(msg_type)
-                    self.callback(data)
+                    self.callback(data, self)
                 event = self.event_socket.receive()
     
     def close(self):
+        """
+        Ends subscription loop by setting self.subscribed to False.
+        """
         self.subscribed = False
-
-
-class socket(object):
-    magic_string = 'i3-ipc'
-    chunk_size = 1024 # in bytes
-    timeout = 0.5 # in seconds
-    event_mask = 1 << 31
-    event_workspace = event_mask | 0
-    event_output = event_mask | 1
-    buffer = ''.encode('utf-8')
-    
-    def __init__(self, path=None):
-        if not path:
-            path = get_socket_path()
-        self.path = path
-        # Socket initialization
-        self.socket = socks.socket(socks.AF_UNIX, socks.SOCK_STREAM)
-        self.socket.settimeout(self.timeout)
-        self.socket.connect(self.path)
-        # Struct format initialization, length of magic string is in bytes
-        self.struct_header = '<%dsII' % len(self.magic_string.encode('utf-8'))
-        self.struct_header_size = struct.calcsize(self.struct_header)
-    
-    def get(self, msg_type, payload=''):
-        self.send(msg_type, payload)
-        return self.receive()
-    
-    def subscribe(self, event_type, event=None):
-        if event_type not in event_types:
-            raise ValueError("Unsupported event type")
-        # Create JSON payload from given event type and event
-        payload = [event_type]
-        if event:
-            payload.append(event)
-        payload = json.dumps(payload)
-        return self.get('subscribe', payload)
-    
-    def send(self, msg_type, payload=''):
-        if msg_type not in msg_types:
-            raise ValueError("Unsupported message type")
-        message = self.pack(msg_type, payload)
-        # Continuously send the bytes from message
-        self.socket.sendall(message)
-    
-    def receive(self):
-        try:
-            data = self.socket.recv(self.chunk_size)
-            msg_magic, msg_length, msg_type = self.unpack_header(data)
-            msg_size = self.struct_header_size + msg_length
-            # Receive data until whole message is through
-            while len(data) < msg_size:
-                data += self.socket.recv(msg_length)
-            data = self.buffer + data
-            return self.unpack(data)
-        except socks.timeout:
-            self.buffer
-    
-    def pack(self, msg_type, payload):
-        msg_magic = self.magic_string
-        # Get the byte count instead of number of characters
-        msg_length = len(payload.encode('utf-8'))
-        msg_type = msg_types.index(msg_type)
-        # "struct.pack" returns byte string, decoding it for concatenation
-        msg_length = struct.pack('I', msg_length).decode('utf-8')
-        msg_type = struct.pack('I', msg_type).decode('utf-8')
-        message = '%s%s%s%s' % (msg_magic, msg_length, msg_type, payload)
-        # Encoding the message back to byte string
-        return message.encode('utf-8')
-    
-    def unpack(self, data):
-        data_size = len(data)
-        msg_magic, msg_length, msg_type = self.unpack_header(data)
-        msg_size = self.struct_header_size + msg_length
-        # Message shouldn't be any longer than the data
-        if data_size >= msg_size:
-            payload = data[self.struct_header_size:msg_size].decode('utf-8')
-            payload = json.loads(payload)
-            self.buffer = data[msg_size:]
-            return payload
-        else:
-            self.buffer = data
-            return None
-    
-    def unpack_header(self, data):
-        return struct.unpack(self.struct_header, data[:self.struct_header_size])
-    
-    def close(self):
-        self.socket.close()
     
 
 def __call_cmd__(cmd):
@@ -212,7 +263,7 @@ def msg(type, message=''):
 
 def __function__(type, message=''):
     """
-    Excepts a message type and a message itself.
+    Excepts a message type and message itself.
     Returns lambda function, which excepts arguments and adds them to the
     message string, calls message function with the resulting arguments.
     """
@@ -221,7 +272,12 @@ def __function__(type, message=''):
 
 
 def subscribe(event_type, event):
-    def callback(data):
+    """
+    Excepts an event_type and event itself.
+    Creates a new subscription, prints data on every event until
+    KeyboardInterrupt (^C) is raised.
+    """
+    def callback(data, subscript):
         print(data)
     subscript = subscription(callback, event_type, event,
                              data_socket=default_socket())
