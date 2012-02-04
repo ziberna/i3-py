@@ -29,7 +29,7 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 __date__ = '2012-02-04'
 __license__ = 'GNU GPLv3'
 
@@ -70,7 +70,7 @@ def parse_msg_type(msg_type):
         index = int(msg_type)
     except ValueError:
         index = -1
-    if index >= 0 and msg_type < len(msg_types):
+    if index >= 0 and index < len(msg_types):
         return index
     msg_type = str(msg_type)
     if msg_type in msg_types:
