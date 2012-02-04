@@ -102,7 +102,8 @@ Creating subscriptions
 def callback(data, subscription):
     print(data)
 
-subscription = i3.subscription(callback, 'workspace', 'focus')
+subscription = i3.subscription(callback, 'workspace', 'focus', timeout=1,
+                               chunk_size=2048, magic_string='i9-ipc')
 ...
 subscription.close() # OR subscription.subscribed = False
 ```
@@ -120,7 +121,7 @@ want to provide already created sockets with non-default settings.
 
 Author: Jure Žiberna  
 License: GNU GPL 3  
-Version: 0.1.1
+Version: 0.1.2
 
 The socket and subscription code is more or less a fix and a cleanup of
 [Nathan Middleton's](https://github.com/thepub/i3ipc) and

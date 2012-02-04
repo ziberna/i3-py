@@ -27,7 +27,7 @@ import time
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __license__ = 'GNU GPLv3'
 
 
@@ -59,10 +59,17 @@ class socket(object):
     timeout = 0.5 # in seconds
     buffer = ''.encode('utf-8') # byte string
     
-    def __init__(self, path=None):
+    def __init__(self, path=None, timeout=None, chunk_size=None,
+                 magic_string=None):
         if not path:
             path = get_socket_path()
         self.path = path
+        if timeout:
+            self.timeout = timout
+        if chunk_size:
+            self.chunk_size = chunk_size
+        if magic_string:
+            self.magic_string = magic_string
         # Socket initialization
         self.socket = socks.socket(socks.AF_UNIX, socks.SOCK_STREAM)
         self.socket.settimeout(self.timeout)
