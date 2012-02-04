@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+#======================================================================
+# i3 (Python module for communicating with i3 window manager)
+# Copyright (C) 2012  Jure Ziberna
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#======================================================================
+
+
+import os
+import argparse
+
+import i3
+
+
+# Generate description based on current version and its date
+DESCRIPTION = 'i3-ipc %s (%s).' % (i3.__version__, i3.__date__)
+DESCRIPTION += ' Implemented in Python.'
+
+# Dictionary of command-line help messages
+HELP = {
+    'socket': "custom path to an i3 socket file",
+    'type': "message type in text form (e.g. \"get_tree\")",
+    'timeout': "seconds before socket times out, floating point values allowed",
+    'message': "message or \"payload\" to send, can be multiple strings",
+}
+
+
+def parse():
+    """
+    Creates argument parser for parsing command-line arguments. Returns parsed
+    arguments in a form of a namespace.
+    """
+    # Setting up argument parses
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser.add_argument('-s', metavar='<socket>', dest='socket', type=str, default=None, help=HELP['socket'])
+    parser.add_argument('-t', metavar='<type>', dest='type', type=str, default='command', help=HELP['type'])
+    parser.add_argument('-T', metavar='<timeout>', dest='timeout', type=float, default=None, help=HELP['timeout'])
+    parser.add_argument('<message>', type=str, nargs='*', help=HELP['message'])
+    # Parsing and hacks
+    args = parser.parse_args()
+    message = args.__dict__['<message>']
+    args.message = ' '.join(message)
+    return args
+
+
+def main(socket, type, timeout, message):
+    """
+    Excepts arguments and evaluates them.
+    """
+    if not socket:
+        socket = i3.get_socket_path()
+    elif not os.path.exists(socket):
+        print("Socket '%s' doesn't exist" % socket)
+        return False
+    # Initializes default socket with given path and timeout
+    i3.__socket__ = i3.socket(path=socket, timeout=timeout)
+    # Format input
+    if type in i3.event_types:
+        event_type = type
+        event = message
+        type = 'subscribe'
+    elif type == 'subscribe':
+        message = message.split(' ')
+        message_len = len(message)
+        if message_len >= 1:
+            event_type = message[0]
+            if message_len >= 2:
+                event = ' '.join(message[1:])
+            else:
+                event = ''
+        else:
+            # Let if fail, it will fail early
+            event_type = ''
+    # Let unavailable message/event types fail, exceptions will handle the rest
+    try:
+        if type == 'subscribe':
+            i3.subscribe(event_type, event)
+        else:
+            output = i3.msg(type, message)
+            print(output)
+    except i3.MessageTypeError as msg_error:
+        print(msg_error)
+    except i3.EventTypeError as event_error:
+        print(event_error)
+
+
+if __name__ == '__main__':
+    args = parse()
+    main(args.socket, args.type, args.timeout, args.message)
+
