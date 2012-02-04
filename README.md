@@ -125,6 +125,8 @@ Subscription class also excepts `event_socket` and `data_socket` if you ever
 want to provide already created sockets with non-default settings.
 
 
+--------------------------------------------------------------------------------
+
 i3-ipc
 ======
 
