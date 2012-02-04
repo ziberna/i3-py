@@ -47,17 +47,6 @@ event_types = [
     'output',
 ]
 
-def parse_type(type, type_list):
-    if isinstance(type, str):
-        try:
-            type = int(type)
-        except ValueError:
-            pass
-    if isinstance(type, int) and (type >= 0 and type < len(type_list)):
-        return type_list[type]
-    else:
-        return str(type).lower()
-
 
 class MessageTypeError(Exception):
     def __init__(self, type):
@@ -68,6 +57,35 @@ class MessageTypeError(Exception):
 class EventTypeError(MessageTypeError):
     def __str__(self):
         return 'Event type "%s" isn\'t available' % self.type
+
+
+def parse_type(type, types):
+    """
+    Tries to parse the given type object. Returns the i3-ipc number of the
+    given type. Raises an exception if the type doesn't exist.
+    """
+    # Choose an exception type
+    if types == msg_types:
+        Error = MessageTypeError
+    elif types == event_types:
+        Error = EventTypeError
+    else:
+        raise ValueError('"types" argument can only be i3.msg_types or ' + \
+                         'i3.event_types')
+    # Convert the given value into string and try to parse it
+    type = str(type)
+    if type in types:
+        return types.index(type)
+    # Try converting the given value into an int
+    try:
+        type = int(type)
+    except ValueError:
+        pass
+    # Finally, check if the value is valid. Raise an exception if it's not
+    if isinstance(type, int) and (type >= 0 and type < len(types)):
+        return type
+    else:
+        raise Error(type)
 
 
 class socket(object):
@@ -107,7 +125,7 @@ class socket(object):
     def get(self, msg_type, payload=''):
         """
         Convenience method, calls "socket.send(msg_type, payload)" and
-        returns data from "socket.recieve()".
+        returns data from "socket.receive()".
         """
         self.send(msg_type, payload)
         return self.receive()
@@ -117,8 +135,6 @@ class socket(object):
         Subscribes to an event. Returns data on first occurrence.
         """
         event_type = parse_type(event_type, event_types)
-        if event_type not in event_types:
-            raise EventTypeError(event_type)
         # Create JSON payload from given event type and event
         payload = [event_type]
         if event:
@@ -132,10 +148,8 @@ class socket(object):
         and continuously sending bytes from the packed message.
         """
         msg_type = parse_type(msg_type, msg_types)
-        if msg_type not in msg_types:
-            raise MessageTypeError(msg_type)
         message = self.pack(msg_type, payload)
-        # Continuously send the bytes from message
+        # Continuously send the bytes from the message
         self.socket.sendall(message)
     
     def receive(self):
@@ -147,7 +161,7 @@ class socket(object):
             data = self.socket.recv(self.chunk_size)
             msg_magic, msg_length, msg_type = self.unpack_header(data)
             msg_size = self.struct_header_size + msg_length
-            # Receive data until whole message is through
+            # Keep receiving data until the whole message is through
             while len(data) < msg_size:
                 data += self.socket.recv(msg_length)
             data = self.buffer + data
@@ -167,9 +181,6 @@ class socket(object):
         # Get the byte count instead of number of characters
         msg_length = len(payload.encode('utf-8'))
         msg_type = parse_type(msg_type, msg_types)
-        if msg_type not in msg_type:
-            raise MessageTypeError(msg_type)
-        msg_type = msg_types.index(msg_type)
         # "struct.pack" returns byte string, decoding it for concatenation
         msg_length = struct.pack('I', msg_length).decode('utf-8')
         msg_type = struct.pack('I', msg_type).decode('utf-8')
@@ -229,10 +240,8 @@ class subscription(threading.Thread):
                  data_socket=None):
         # Variable initialization
         if not callable(callback):
-            raise TypeError("callback must be callable")
+            raise TypeError('callback must be callable')
         event_type = parse_type(event_type, event_types)
-        if event_type not in event_types:
-            raise EventTypeError(event_type)
         self.callback = callback
         self.event_type = event_type
         self.event = event
