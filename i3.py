@@ -119,6 +119,7 @@ class socket(object):
         Sends the given message type with given message by packing them
         and continuously sending bytes from the packed message.
         """
+        msg_type = msg_type.lower()
         if msg_type not in msg_types:
             raise MessageTypeError(msg_type)
         message = self.pack(msg_type, payload)
@@ -150,6 +151,7 @@ class socket(object):
         msg_magic = self.magic_string
         # Get the byte count instead of number of characters
         msg_length = len(payload.encode('utf-8'))
+        msg_type = msg_type.lower()
         if msg_type not in msg_type:
             raise MessageTypeError(msg_type)
         msg_type = msg_types.index(msg_type)
@@ -213,6 +215,7 @@ class subscription(threading.Thread):
         # Variable initialization
         if not callable(callback):
             raise TypeError("callback must be callable")
+        event_type = event_type.lower()
         if event_type not in event_types:
             raise EventTypeError(event_type)
         self.callback = callback
@@ -346,7 +349,7 @@ class i3(object):
             return getattr(self.__module__, name)
         except AttributeError:
             pass
-        if name in self.__module__.msg_types:
+        if name.lower() in self.__module__.msg_types:
             return self.__module__.__function__(type=name)
         else:
             return self.__module__.__function__(type='command', message=name)
