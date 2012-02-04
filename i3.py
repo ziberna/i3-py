@@ -60,6 +60,10 @@ class EventTypeError(MessageTypeError):
 
 
 def parse_msg_type(msg_type):
+    """
+    Returns an i3-ipc code of the message type. Raises an exception if
+    given message type isn't available.
+    """
     try:
         index = int(msg_type)
     except ValueError:
@@ -73,6 +77,10 @@ def parse_msg_type(msg_type):
         raise MessageTypeError(msg_type)
 
 def parse_event_type(event_type):
+    """
+    Return an i3-ipc string of the event_type. Raises an exception if
+    given event type isn't available.
+    """
     try:
         index = int(event_type)
     except ValueError:
@@ -259,17 +267,19 @@ class subscription(threading.Thread):
         """
         Runs a listener loop until self.subscribed is set to False.
         Calls the given callback method with data and the object itself.
+        If event matches given one, then matching data is retrieved.
+        Otherwise, the event itself is sent to the callback.
+        In that case 'change' key contains the thing that was changed.
         """
         self.subscribed = True
-        event = self.event_socket.receive()
         while self.subscribed:
+            event = self.event_socket.receive()
             if event and 'change' in event and event['change'] == self.event:
                 msg_type = self.type_translation[self.event_type]
                 data = self.data_socket.get(msg_type)
                 self.callback(data, self)
             elif event:
                 self.callback(event, self)
-            event = self.event_socket.receive()
     
     def close(self):
         """
