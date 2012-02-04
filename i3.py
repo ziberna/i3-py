@@ -237,12 +237,12 @@ class subscription(threading.Thread):
         """
         self.subscribed = True
         event = self.event_socket.receive()
-        while event and self.subscribed:
+        while self.subscribed:
             if 'change' in event and event['change'] == self.event:
                 msg_type = self.type_translation[self.event_type]
                 data = self.data_socket.get(msg_type)
                 self.callback(data, self)
-            else:
+            elif event:
                 self.callback(event, self)
             event = self.event_socket.receive()
         self.subscribed = False
