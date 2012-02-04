@@ -27,7 +27,7 @@ import time
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.0.3'
+__version__ = '0.1.0'
 __license__ = 'GNU GPLv3'
 
 
@@ -121,7 +121,7 @@ class socket(object):
             data = self.buffer + data
             return self.unpack(data)
         except socks.timeout:
-            self.buffer
+            return self.buffer
     
     def pack(self, msg_type, payload):
         """
@@ -246,6 +246,10 @@ def __call_cmd__(cmd):
 
 __socket__ = None
 def default_socket():
+    """
+    Returns an already initialized socket. The socket was created with
+    default values.
+    """
     global __socket__
     if not __socket__:
         __socket__ = socket()
