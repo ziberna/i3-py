@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+#======================================================================
+# i3 (Python module for communicating with i3 window manager)
+# Copyright (C) 2012  Jure Ziberna
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#======================================================================
+
+
+import os
+import argparse
+
+import i3
+
+
+description = 'i3-ipc %s (%s).' % (i3.__version__, i3.__date__)
+description += ' Implemented in Python.'
+
+
+def parse():
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-s', metavar='<socket>', dest='socket', type=str,
+                        default=None)
+    parser.add_argument('-t', metavar='<type>', dest='type', type=str,
+                        default='command')
+    parser.add_argument('-T', metavar='<timeout>', dest='timeout', type=int,
+                        default=None)
+    parser.add_argument('<message>', nargs='*', type=str, default='')
+    args = parser.parse_args()
+    args.__dict__['message'] = ' '.join(args.__dict__['<message>'])
+    return args
+
+def main(socket, type, timeout, message):
+    if not socket:
+        socket = i3.get_socket_path()
+    elif not os.path.exists(socket):
+        print("'%s' doesn't exist" % socket)
+        return False
+    # Initializes default socket with given path and timeout
+    i3.__socket__ = i3.socket(path=socket, timeout=timeout)
+    # Format input
+    if type in i3.event_types:
+        event_type = type
+        event = message
+        type = 'subscribe'
+    elif type == 'subscribe':
+        message = message.split(' ')
+        message_len = len(message)
+        if message_len >= 1:
+            event_type = message[0]
+            if message_len >= 2:
+                event = ' '.join(message[1:])
+            else:
+                event = ''
+        else:
+            event_type = ''
+    
+    if type == 'subscribe':
+        i3.subscribe(event_type, event)
+    else:
+        output = i3.msg(type, message)
+        print(output)
+
+
+if __name__ == '__main__':
+    args = parse()
+    main(args.socket, args.type, args.timeout, args.message)
+
