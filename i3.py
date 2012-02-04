@@ -28,7 +28,9 @@ __license__ = 'GNU GPLv3'
 
 
 msg_types = [
+    'command',
     'get_workspaces',
+    'subscribe',
     'get_outputs',
     'get_tree',
     'get_marks',
@@ -80,7 +82,7 @@ def subscribe(payload=None):
     raise NotImplementedError("Subscribing not implemented. Sorry.")
 
 
-def get_socket_path(self):
+def get_socket_path():
     """
     Get the path via i3 command.
     """
@@ -111,7 +113,7 @@ class i3(object):
             return getattr(self.__module__, name)
         except AttributeError:
             pass
-        if name in self.__module__.msg_types:
+        if name in self.__module__.msg_types and name is not 'command':
             return self.__module__.__function__(type=name)
         else:
             return self.__module__.__function__(type='command', message=name)
