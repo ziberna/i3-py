@@ -29,9 +29,9 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 __date__ = '2012-02-05'
-__license__ = 'GNU GPLv3'
+__license__ = 'GNU GPL 3'
 
 
 msg_types = [
@@ -72,7 +72,7 @@ def parse_msg_type(msg_type):
         index = -1
     if index >= 0 and index < len(msg_types):
         return index
-    msg_type = str(msg_type)
+    msg_type = str(msg_type).lower()
     if msg_type in msg_types:
         return msg_types.index(msg_type)
     else:
@@ -89,7 +89,7 @@ def parse_event_type(event_type):
         index = -1
     if index >= 0 and index < len(event_types):
         return event_types[index]
-    event_type = str(event_type)
+    event_type = str(event_type).lower()
     if event_type in event_types:
         return event_type
     else:
@@ -371,10 +371,12 @@ def success(json_msg):
 
 """ The magic starts here """
 class i3(types.ModuleType):
+    """
+    i3.py is a Python module for communicating with the i3 window manager.
+    """
     def __init__(self, module):
         self.__module__ = module
-        for attr in ["__builtins__", "__doc__", "__name__", "__package__"]:
-            setattr(self, attr, getattr(module, attr))
+        self.__name__ = module.__name__
     
     def __getattr__(self, name):
         """
@@ -391,5 +393,5 @@ class i3(types.ModuleType):
             return self.__module__.__function__(type='command', message=name)
     
 
-# Turn the module into an i3 ModuleType object
+# Turn the module into an i3 object
 sys.modules[__name__] = i3(sys.modules[__name__])
