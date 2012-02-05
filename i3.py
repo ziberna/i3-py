@@ -29,12 +29,12 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 __date__ = '2012-02-05'
 __license__ = 'GNU GPL 3'
 
 
-msg_types = [
+MSG_TYPES = [
     'command',
     'get_workspaces',
     'subscribe',
@@ -44,7 +44,7 @@ msg_types = [
     'get_bar_config',
 ]
 
-event_types = [
+EVENT_TYPES = [
     'workspace',
     'output',
 ]
@@ -70,11 +70,11 @@ def parse_msg_type(msg_type):
         index = int(msg_type)
     except ValueError:
         index = -1
-    if index >= 0 and index < len(msg_types):
+    if index >= 0 and index < len(MSG_TYPES):
         return index
     msg_type = str(msg_type).lower()
-    if msg_type in msg_types:
-        return msg_types.index(msg_type)
+    if msg_type in MSG_TYPES:
+        return MSG_TYPES.index(msg_type)
     else:
         raise MessageTypeError(msg_type)
 
@@ -87,16 +87,16 @@ def parse_event_type(event_type):
         index = int(event_type)
     except ValueError:
         index = -1
-    if index >= 0 and index < len(event_types):
-        return event_types[index]
+    if index >= 0 and index < len(EVENT_TYPES):
+        return EVENT_TYPES[index]
     event_type = str(event_type).lower()
-    if event_type in event_types:
+    if event_type in EVENT_TYPES:
         return event_type
     else:
         raise EventTypeError(event_type)
 
 
-class socket(object):
+class Socket(object):
     """
     Socket for communicating with the i3 window manager.
     Optional arguments:
@@ -229,7 +229,7 @@ class socket(object):
         self.socket.close()
     
 
-class subscription(threading.Thread):
+class Subscription(threading.Thread):
     """
     Creates a new subscription and runs a listener loop. Calls the
     callback on event.
@@ -237,8 +237,8 @@ class subscription(threading.Thread):
     callback = lambda data, subscript: print(data)
     event_type = 'workspace'
     event = 'focus'
-    event_socket = <socket object>
-    data_socket = <socket object>
+    event_socket = <i3.Socket object>
+    data_socket = <i3.Socket object>
     """
     subscribed = False
     type_translation = {
@@ -257,11 +257,11 @@ class subscription(threading.Thread):
         self.event = event
         # Socket initialization
         if not event_socket:
-            event_socket = socket()
+            event_socket = Socket()
         self.event_socket = event_socket
         self.event_socket.subscribe(event_type, event)
         if not data_socket:
-            data_socket = socket()
+            data_socket = Socket()
         self.data_socket = data_socket
         # Thread initialization
         threading.Thread.__init__(self)
@@ -278,18 +278,23 @@ class subscription(threading.Thread):
         self.subscribed = True
         while self.subscribed:
             event = self.event_socket.receive()
-            if event and 'change' in event and event['change'] == self.event:
+            if not event:  # skip an iteration if event is None
+                continue
+            if not self.event or ('change' in event and event['change'] == self.event):
                 msg_type = self.type_translation[self.event_type]
                 data = self.data_socket.get(msg_type)
-                self.callback(data, self)
-            elif event:
-                self.callback(event, self)
+            else:
+                data = None
+            self.callback(event, data, self)
     
     def close(self):
         """
-        Ends subscription loop by setting self.subscribed to False.
+        Ends subscription loop by setting self.subscribed to False and
+        closing both sockets.
         """
         self.subscribed = False
+        #self.event_socket.close()  # TODO: socket reconnection
+        #self.data_socket.close()
     
 
 def __call_cmd__(cmd):
@@ -305,6 +310,7 @@ def __call_cmd__(cmd):
     output = output.decode('utf-8')  # byte string decoding
     return output.strip()
 
+
 __socket__ = None
 def default_socket():
     """
@@ -313,8 +319,9 @@ def default_socket():
     """
     global __socket__
     if not __socket__:
-        __socket__ = socket()
+        __socket__ = Socket()
     return __socket__
+
 
 def msg(type, message=''):
     """
@@ -325,6 +332,7 @@ def msg(type, message=''):
     output = default_socket().get(type, message)
     return output
 
+
 def __function__(type, message=''):
     """
     Excepts a message type and message itself.
@@ -334,22 +342,27 @@ def __function__(type, message=''):
     message = message.replace('__', ' ')
     return lambda *args: msg(type, ' '.join([message] + list(args)))
 
-def subscribe(event_type, event, callback=None):
+
+def subscribe(event_type, event=None, callback=None):
     """
     Excepts an event_type and event itself.
     Creates a new subscription, prints data on every event until
     KeyboardInterrupt (^C) is raised.
     """
     if not callback:
-        def callback(data, subscript):
-            print(data)
-    subscript = subscription(callback, event_type, event,
-                             data_socket=default_socket())
+        def callback(event, data, subscript):
+            print('changed:', event['change'])
+            if data:
+                print('data:\n', data)
+    
+    socket = default_socket()
+    subscript = Subscription(callback, event_type, event, data_socket=socket)
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
         subscript.close()
+
 
 def get_socket_path():
     """
@@ -358,6 +371,7 @@ def get_socket_path():
     cmd = ['i3', '--get-socketpath']
     output = __call_cmd__(cmd)
     return output
+
 
 def success(json_msg):
     """
@@ -387,7 +401,7 @@ class i3(types.ModuleType):
             return getattr(self.__module__, name)
         except AttributeError:
             pass
-        if name.lower() in self.__module__.msg_types:
+        if name.lower() in self.__module__.MSG_TYPES:
             return self.__module__.__function__(type=name)
         else:
             return self.__module__.__function__(type='command', message=name)
