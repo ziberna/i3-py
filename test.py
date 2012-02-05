@@ -64,7 +64,7 @@ class GeneralTest(unittest.TestCase):
         func = i3.some_attribute
         self.assertTrue(callable(func))
         socket = i3.default_socket()
-        self.assertIsInstance(socket, i3.socket)
+        self.assertIsInstance(socket, i3.Socket)
     
     def test_success(self):
         data = {'success': True}
