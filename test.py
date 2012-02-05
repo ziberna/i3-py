@@ -26,7 +26,7 @@ class ParseTest(unittest.TestCase):
     
     def test_msg_error(self):
         border_lower = -1
-        border_higher = len(i3.msg_types)
+        border_higher = len(i3.MSG_TYPES)
         values = ['joke', border_lower, border_higher, -100, 100]
         for val in values:
             self.assertRaises(i3.MessageTypeError, i3.parse_msg_type, val)
@@ -34,7 +34,7 @@ class ParseTest(unittest.TestCase):
     
     def test_event_error(self):
         border_lower = -1
-        border_higher = len(i3.event_types)
+        border_higher = len(i3.EVENT_TYPES)
         values = ['joke', border_lower, border_higher, -100, 100]
         for val in values:
             self.assertRaises(i3.EventTypeError, i3.parse_event_type, val)
