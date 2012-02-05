@@ -29,7 +29,7 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.5'
+__version__ = '0.2.7'
 __date__ = '2012-02-05'
 __license__ = 'GNU GPL 3'
 
@@ -117,24 +117,32 @@ class Socket(object):
             path = get_socket_path()
         self.path = path
         if timeout:
-            self.timeout = timout
+            self.timeout = timeout
         if chunk_size:
             self.chunk_size = chunk_size
         if magic_string:
             self.magic_string = magic_string
-        # Socket initialization
-        self.socket = socks.socket(socks.AF_UNIX, socks.SOCK_STREAM)
-        self.socket.settimeout(self.timeout)
+        # Socket initialization and connection
+        self.initialize()
         self.connect()
         # Struct format initialization, length of magic string is in bytes
         self.struct_header = '<%dsII' % len(self.magic_string.encode('utf-8'))
         self.struct_header_size = struct.calcsize(self.struct_header)
     
-    def connect(self):
+    def initialize(self):
         """
-        Connects the socket to socket path.
+        Initializes the socket.
         """
-        self.socket.connect(self.path)
+        self.socket = socks.socket(socks.AF_UNIX, socks.SOCK_STREAM)
+        self.socket.settimeout(self.timeout)
+    
+    def connect(self, path=None):
+        """
+        Connects the socket to socket path if not already connected.
+        """
+        if not self.connected:
+            self.initialize()
+            self.socket.connect(path if path else self.path)
     
     def get(self, msg_type, payload=''):
         """
@@ -222,6 +230,17 @@ class Socket(object):
         """
         return struct.unpack(self.struct_header, data[:self.struct_header_size])
     
+    @property
+    def connected(self):
+        """
+        Returns True if connected and False if not.
+        """
+        try:
+            self.get('command')
+            return True
+        except socks.error:
+            return False
+    
     def close(self):
         """
         Closes the socket.
@@ -286,6 +305,7 @@ class Subscription(threading.Thread):
             else:
                 data = None
             self.callback(event, data, self)
+        self.close()
     
     def close(self):
         """
@@ -293,8 +313,9 @@ class Subscription(threading.Thread):
         closing both sockets.
         """
         self.subscribed = False
-        #self.event_socket.close()  # TODO: socket reconnection
-        #self.data_socket.close()
+        self.event_socket.close()
+        if self.data_socket is not default_socket():
+            self.data_socket.close()
     
 
 def __call_cmd__(cmd):
