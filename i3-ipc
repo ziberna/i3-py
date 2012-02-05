@@ -65,9 +65,9 @@ def main(socket, type, timeout, message):
         print("Socket '%s' doesn't exist" % socket)
         return False
     # Initializes default socket with given path and timeout
-    i3.__socket__ = i3.socket(path=socket, timeout=timeout)
+    i3.__socket__ = i3.Socket(path=socket, timeout=timeout)
     # Format input
-    if type in i3.event_types:
+    if type in i3.EVENT_TYPES:
         event_type = type
         event = message
         type = 'subscribe'
