@@ -278,18 +278,23 @@ class subscription(threading.Thread):
         self.subscribed = True
         while self.subscribed:
             event = self.event_socket.receive()
-            if event and 'change' in event and event['change'] == self.event:
+            if not event:  # skip an iteration if event is None
+                continue
+            if not self.event or ('change' in event and event['change'] == self.event):
                 msg_type = self.type_translation[self.event_type]
                 data = self.data_socket.get(msg_type)
-                self.callback(data, self)
-            elif event:
-                self.callback(event, self)
+            else:
+                data = None
+            self.callback(event, data, self)
     
     def close(self):
         """
-        Ends subscription loop by setting self.subscribed to False.
+        Ends subscription loop by setting self.subscribed to False and
+        closing both sockets.
         """
         self.subscribed = False
+        #self.event_socket.close()  # TODO: socket reconnection
+        #self.data_socket.close()
     
 
 def __call_cmd__(cmd):
@@ -305,6 +310,7 @@ def __call_cmd__(cmd):
     output = output.decode('utf-8')  # byte string decoding
     return output.strip()
 
+
 __socket__ = None
 def default_socket():
     """
@@ -316,6 +322,7 @@ def default_socket():
         __socket__ = socket()
     return __socket__
 
+
 def msg(type, message=''):
     """
     Excepts a message type and a message itself.
@@ -324,6 +331,7 @@ def msg(type, message=''):
     """
     output = default_socket().get(type, message)
     return output
+
 
 def __function__(type, message=''):
     """
@@ -334,6 +342,7 @@ def __function__(type, message=''):
     message = message.replace('__', ' ')
     return lambda *args: msg(type, ' '.join([message] + list(args)))
 
+
 def subscribe(event_type, event=None, callback=None):
     """
     Excepts an event_type and event itself.
@@ -341,15 +350,18 @@ def subscribe(event_type, event=None, callback=None):
     KeyboardInterrupt (^C) is raised.
     """
     if not callback:
-        def callback(data, subscript):
-            print(data)
-    subscript = subscription(callback, event_type, event,
-                             data_socket=default_socket())
+        def callback(event, data, subscript):
+            print('changed:', event['change'])
+            if data:
+                print('data:\n', data)
+    
+    subscript = subscription(callback, event_type, event, data_socket=default_socket())
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
         subscript.close()
+
 
 def get_socket_path():
     """
@@ -358,6 +370,7 @@ def get_socket_path():
     cmd = ['i3', '--get-socketpath']
     output = __call_cmd__(cmd)
     return output
+
 
 def success(json_msg):
     """
