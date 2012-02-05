@@ -29,8 +29,8 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.2'
-__date__ = '2012-02-04'
+__version__ = '0.2.3'
+__date__ = '2012-02-05'
 __license__ = 'GNU GPLv3'
 
 
@@ -161,7 +161,6 @@ class socket(object):
         Sends the given message type with given message by packing them
         and continuously sending bytes from the packed message.
         """
-        msg_type = parse_msg_type(msg_type)
         message = self.pack(msg_type, payload)
         # Continuously send the bytes from the message
         self.socket.sendall(message)
