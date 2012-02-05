@@ -29,7 +29,7 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 __date__ = '2012-02-05'
 __license__ = 'GNU GPL 3'
 
@@ -334,7 +334,7 @@ def __function__(type, message=''):
     message = message.replace('__', ' ')
     return lambda *args: msg(type, ' '.join([message] + list(args)))
 
-def subscribe(event_type, event, callback=None):
+def subscribe(event_type, event=None, callback=None):
     """
     Excepts an event_type and event itself.
     Creates a new subscription, prints data on every event until
