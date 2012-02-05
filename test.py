@@ -45,10 +45,20 @@ class SocketTest(unittest.TestCase):
     def setUp(self):
         pass
     
-    def test_reponse(self):
-        workspaces = i3.msg('get_workspaces')
+    def test_response(self, socket=i3.default_socket()):
+        workspaces = socket.get('get_workspaces')
+        self.assertIsNotNone(workspaces)
         for workspace in workspaces:
             self.assertTrue('name' in workspace)
+    
+    def test_multiple_sockets(self):
+        socket1 = i3.Socket()
+        socket2 = i3.Socket()
+        socket3 = i3.Socket()
+        for socket in [socket1, socket2, socket3]:
+            self.test_response(socket)
+        for socket in [socket1, socket2, socket3]:
+            socket.close()
     
     def test_pack(self):
         packed = i3.default_socket().pack(0, "haha")
