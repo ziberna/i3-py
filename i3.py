@@ -29,8 +29,8 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.7'
-__date__ = '2012-02-05'
+__version__ = '0.3.1'
+__date__ = '2012-02-06'
 __license__ = 'GNU GPL 3'
 
 
@@ -358,10 +358,10 @@ def msg(type, message=''):
     """
     Excepts a message type and a message itself.
     Talks to the i3 via socket.
-    Returns the output from the socket.
+    Returns the response from the socket.
     """
-    output = default_socket().get(type, message)
-    return output
+    response = default_socket().get(type, message)
+    return response
 
 
 def __function__(type, message=''):
@@ -371,7 +371,17 @@ def __function__(type, message=''):
     message string, calls message function with the resulting arguments.
     """
     message = message.replace('__', ' ')
-    return lambda *args: msg(type, ' '.join([message] + list(args)))
+    
+    def function(*args):
+        message_full = ' '.join([message] + list(args))
+        response = msg(type, message_full)
+        if parse_msg_type(type) == 0:  # command message
+            return success(response)  # returns the value of success key
+        else:
+            return response
+    
+    function.__name__ = type
+    return function
 
 
 def subscribe(event_type, event=None, callback=None):
@@ -406,13 +416,13 @@ def get_socket_path():
     return output
 
 
-def success(json_msg):
+def success(json_response):
     """
     Convenience method for checking success value.
     Returns None if the "success" key isn't in the received message.
     """
-    if isinstance(json_msg, dict) and 'success' in json_msg:
-        return json_msg['success']
+    if isinstance(json_response, dict) and 'success' in json_response:
+        return json_response['success']
     return None
 
 
