@@ -288,6 +288,16 @@ class Subscription(threading.Thread):
     
     def run(self):
         """
+        Wrapper method for the listen method -- handles exceptions.
+        The method is run by the underlying "threading.Thread" object.
+        """
+        try:
+            self.listen()
+        except socks.error:
+            self.close()
+    
+    def listen(self):
+        """
         Runs a listener loop until self.subscribed is set to False.
         Calls the given callback method with data and the object itself.
         If event matches given one, then matching data is retrieved.
@@ -368,21 +378,23 @@ def subscribe(event_type, event=None, callback=None):
     """
     Excepts an event_type and event itself.
     Creates a new subscription, prints data on every event until
-    KeyboardInterrupt (^C) is raised.
+    KeyboardInterrupt is raised.
     """
     if not callback:
-        def callback(event, data, subscript):
+        def callback(event, data, subscription):
             print('changed:', event['change'])
             if data:
                 print('data:\n', data)
     
     socket = default_socket()
-    subscript = Subscription(callback, event_type, event, data_socket=socket)
+    subscription = Subscription(callback, event_type, event, data_socket=socket)
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        subscript.close()
+        pass
+    finally:
+        subscription.close()
 
 
 def get_socket_path():
