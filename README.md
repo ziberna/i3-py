@@ -195,18 +195,23 @@ response = socket.msg(`command`, `focus right`)
 socket.close()
 ```
 
-To check if socket has been closed use the `socket.connected` property. There
-are even more lower-level stuff, like packing and unpacking the payload, sending
+To check if socket has been closed use the `socket.connected` property. There's
+even more lower-level stuff, like packing and unpacking the payload, sending
 it and receiving it... See the docs for these.
 
 
 Exceptions
 ----------
 
-There are currently two exception types, `i3.MessageTypeError` and
-`i3.EventTypeError`. These are raised when you use unavailable types. If you
-want to get the list of available ones from Python, use `i3.MSG_TYPES` and
-`i3.EVENT_TYPES`.
+There are three exceptions:
+
+ - `i3.MessageTypeError`, raised when you use unavailable message type
+ - `i3.EventTypeError`, raised when you use unavaible event type
+ - `i3.MessageError`, raised when i3 sends back an error (the exception contains
+   that error string)
+
+If you want to get the list of available ones from Python, use `i3.MSG_TYPES`
+and `i3.EVENT_TYPES`.
 
 Okay, that's all for now. Some stuff has been left out, so be
 sure to check the docs via Python's `help` function.
