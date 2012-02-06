@@ -23,7 +23,7 @@ import i3
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.0.3'
+__version__ = '0.1.0'
 __date__ = '2012-02-06'
 __license__ = 'GNU GPL 3'
 
@@ -40,6 +40,7 @@ class Colors(object):
     - inactive (unfocused workspace)
     - urgent
     The naming comes from i3-wm itself.
+    Default values are also i3-wm's defaults.
     """
     # bar colors
     background = '#000000'
@@ -50,13 +51,16 @@ class Colors(object):
     inactive = ('#888888', '#222222')
     urgent = ('#ffffff', '#900000')
     
-    def get_color(self, workspace):
+    def get_color(self, workspace, output):
         """
         Returns a (foreground, background) tuple based on given workspace
         state.
         """
         if workspace['focused']:
-            return self.focused
+            if output['current_workspace'] == workspace['name']:
+                return self.focused
+            else:
+                return self.active
         if workspace['urgent']:
             return self.urgent
         else:
@@ -101,7 +105,8 @@ class i3wsbar(object):
         self.socket = i3.Socket()
         # Output to the bar right away
         workspaces = self.socket.get('get_workspaces')
-        self.display(self.format(workspaces))
+        outputs = self.socket.get('get_outputs')
+        self.display(self.format(workspaces, outputs))
         # Subscribe to an event
         callback = lambda data, event, _: self.change(data, event)
         self.subscription = i3.Subscription(callback, 'workspace')
@@ -112,16 +117,24 @@ class i3wsbar(object):
         present in event.
         """
         if 'change' in event:
-            bar_text = self.format(workspaces)
+            outputs = self.socket.get('get_outputs')
+            bar_text = self.format(workspaces, outputs)
             self.display(bar_text)
     
-    def format(self, workspaces):
+    def format(self, workspaces, outputs):
         """
         Formats the bar text according to the workspace data given.
         """
         bar = ''
         for workspace in workspaces:
-            foreground, background = self.colors.get_color(workspace)
+            output = None
+            for output_ in outputs:
+                if output_['name'] == workspace['output']:
+                    output = output_
+                    break
+            if not output:
+                continue
+            foreground, background = self.colors.get_color(workspace, output)
             if not foreground:
                 continue
             name = workspace['name']

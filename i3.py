@@ -29,8 +29,8 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.2.7'
-__date__ = '2012-02-05'
+__version__ = '0.3.1'
+__date__ = '2012-02-06'
 __license__ = 'GNU GPL 3'
 
 
@@ -288,6 +288,16 @@ class Subscription(threading.Thread):
     
     def run(self):
         """
+        Wrapper method for the listen method -- handles exceptions.
+        The method is run by the underlying "threading.Thread" object.
+        """
+        try:
+            self.listen()
+        except socks.error:
+            self.close()
+    
+    def listen(self):
+        """
         Runs a listener loop until self.subscribed is set to False.
         Calls the given callback method with data and the object itself.
         If event matches given one, then matching data is retrieved.
@@ -348,10 +358,10 @@ def msg(type, message=''):
     """
     Excepts a message type and a message itself.
     Talks to the i3 via socket.
-    Returns the output from the socket.
+    Returns the response from the socket.
     """
-    output = default_socket().get(type, message)
-    return output
+    response = default_socket().get(type, message)
+    return response
 
 
 def __function__(type, message=''):
@@ -361,28 +371,40 @@ def __function__(type, message=''):
     message string, calls message function with the resulting arguments.
     """
     message = message.replace('__', ' ')
-    return lambda *args: msg(type, ' '.join([message] + list(args)))
+    
+    def function(*args):
+        message_full = ' '.join([message] + list(args))
+        response = msg(type, message_full)
+        if parse_msg_type(type) == 0:  # command message
+            return success(response)  # returns the value of success key
+        else:
+            return response
+    
+    function.__name__ = type
+    return function
 
 
 def subscribe(event_type, event=None, callback=None):
     """
     Excepts an event_type and event itself.
     Creates a new subscription, prints data on every event until
-    KeyboardInterrupt (^C) is raised.
+    KeyboardInterrupt is raised.
     """
     if not callback:
-        def callback(event, data, subscript):
+        def callback(event, data, subscription):
             print('changed:', event['change'])
             if data:
                 print('data:\n', data)
     
     socket = default_socket()
-    subscript = Subscription(callback, event_type, event, data_socket=socket)
+    subscription = Subscription(callback, event_type, event, data_socket=socket)
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        subscript.close()
+        pass
+    finally:
+        subscription.close()
 
 
 def get_socket_path():
@@ -394,13 +416,13 @@ def get_socket_path():
     return output
 
 
-def success(json_msg):
+def success(json_response):
     """
     Convenience method for checking success value.
     Returns None if the "success" key isn't in the received message.
     """
-    if isinstance(json_msg, dict) and 'success' in json_msg:
-        return json_msg['success']
+    if isinstance(json_response, dict) and 'success' in json_response:
+        return json_response['success']
     return None
 
 

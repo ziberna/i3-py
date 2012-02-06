@@ -1,1 +1,1 @@
-include i3.py i3-ipc README.md
+include i3.py i3wsbar.py README.md
