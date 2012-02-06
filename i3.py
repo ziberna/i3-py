@@ -29,7 +29,7 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 __date__ = '2012-02-06'
 __license__ = 'GNU GPL 3'
 
@@ -59,6 +59,13 @@ class MessageTypeError(Exception):
 class EventTypeError(MessageTypeError):
     def __str__(self):
         return 'Event type "%s" isn\'t available' % self.type
+
+class MessageError(Exception):
+    @staticmethod
+    def parse(response):
+        if response and 'error' in response:
+            return MessageError(response['error'])
+        return None
 
 
 def parse_msg_type(msg_type):
@@ -243,7 +250,7 @@ class Socket(object):
     
     def close(self):
         """
-        Closes the socket.
+        Closes the socket connection.
         """
         self.socket.close()
     
@@ -367,16 +374,20 @@ def msg(type, message=''):
 def __function__(type, message=''):
     """
     Excepts a message type and message itself.
-    Returns lambda function, which excepts arguments and adds them to the
-    message string, calls message function with the resulting arguments.
+    Returns a function, which excepts arguments and adds them to the
+    message string, calls i3.msg with the resulting arguments and returns a
+    response. If message type was command, the function returns success value.
     """
     message = message.replace('__', ' ')
     
     def function(*args):
         message_full = ' '.join([message] + list(args))
         response = msg(type, message_full)
-        if parse_msg_type(type) == 0:  # command message
-            return success(response)  # returns the value of success key
+        error = MessageError.parse(response)
+        if error:
+            raise error
+        elif parse_msg_type(type) == 0:  # if it's a command message, then
+            return success(response)  # return the value of the success key
         else:
             return response
     
