@@ -24,7 +24,7 @@ class ParseTest(unittest.TestCase):
             self.assertEqual(event_types[index], event_types[index+1])
             self.assertIsInstance(event_types[index], str)
     
-    def test_msg_error(self):
+    def test_msg_type_error(self):
         border_lower = -1
         border_higher = len(i3.MSG_TYPES)
         values = ['joke', border_lower, border_higher, -100, 100]
@@ -32,13 +32,18 @@ class ParseTest(unittest.TestCase):
             self.assertRaises(i3.MessageTypeError, i3.parse_msg_type, val)
             self.assertRaises(i3.MessageTypeError, i3.parse_msg_type, str(val))
     
-    def test_event_error(self):
+    def test_event_type_error(self):
         border_lower = -1
         border_higher = len(i3.EVENT_TYPES)
         values = ['joke', border_lower, border_higher, -100, 100]
         for val in values:
             self.assertRaises(i3.EventTypeError, i3.parse_event_type, val)
             self.assertRaises(i3.EventTypeError, i3.parse_event_type, str(val))
+    
+    def test_msg_error(self):
+        self.assertRaises(i3.MessageError, i3.focus)  # missing argument
+        self.assertRaises(i3.MessageError, i3.yada)  # doesn't exist
+        self.assertRaises(i3.MessageError, i3.meh, 'some', 'args')
     
 
 class SocketTest(unittest.TestCase):
