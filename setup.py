@@ -11,7 +11,7 @@ setup(
     author='Jure Ziberna',
     author_email='j.ziberna@gmail.com',
     url='https://github.com/jzib/i3-py',
-    version='0.2.4',
+    version='0.2.7',
     license='GNU GPL 3',
     py_modules=['i3']
 )
