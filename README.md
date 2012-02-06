@@ -195,8 +195,8 @@ response = socket.msg(`command`, `focus right`)
 socket.close()
 ```
 
-To check if socket has been closed use the `socket.connected` property. There
-are even more lower-level stuff, like packing and unpacking the payload, sending
+To check if socket has been closed use the `socket.connected` property. There's
+even more lower-level stuff, like packing and unpacking the payload, sending
 it and receiving it... See the docs for these.
 
 
