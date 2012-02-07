@@ -29,8 +29,8 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.4.0'
-__date__ = '2012-02-06'
+__version__ = '0.4.1'
+__date__ = '2012-02-07'
 __license__ = 'GNU GPL 3'
 
 
@@ -260,7 +260,7 @@ class Subscription(threading.Thread):
     Creates a new subscription and runs a listener loop. Calls the
     callback on event.
     Example parameters:
-    callback = lambda data, subscript: print(data)
+    callback = lambda event, data, subscription: print(data)
     event_type = 'workspace'
     event = 'focus'
     event_socket = <i3.Socket object>
@@ -413,7 +413,7 @@ def subscribe(event_type, event=None, callback=None):
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        pass
+        print('')  # force newline
     finally:
         subscription.close()
 
