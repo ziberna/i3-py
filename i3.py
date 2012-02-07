@@ -260,7 +260,7 @@ class Subscription(threading.Thread):
     Creates a new subscription and runs a listener loop. Calls the
     callback on event.
     Example parameters:
-    callback = lambda data, subscript: print(data)
+    callback = lambda event, data, subscription: print(data)
     event_type = 'workspace'
     event = 'focus'
     event_socket = <i3.Socket object>
