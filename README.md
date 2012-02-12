@@ -94,7 +94,7 @@ So, getting a list of workspaces (and displaying them) is as simple as this:
 import i3
 workspaces = i3.get_workspaces()
 for workspace in workspaces:
-    print(workspace)
+    print(workspace['name'])
 ```
 
 If the attribute you accesed is an existing message type, then the resulting

@@ -29,8 +29,8 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.4.1'
-__date__ = '2012-02-07'
+__version__ = '0.4.2'
+__date__ = '2012-02-12'
 __license__ = 'GNU GPL 3'
 
 
@@ -51,20 +51,30 @@ EVENT_TYPES = [
 
 
 class MessageTypeError(Exception):
+    """
+    Raised when message type isn't available. See i3.MSG_TYPES.
+    """
     def __init__(self, type):
         self.type = type
     def __str__(self):
         return 'Message type "%s" isn\'t available' % self.type
 
 class EventTypeError(MessageTypeError):
+    """
+    Raised when even type isn't available. See i3.EVENT_TYPES.
+    """
     def __str__(self):
         return 'Event type "%s" isn\'t available' % self.type
 
 class MessageError(Exception):
-    @staticmethod
-    def parse(response):
+    """
+    Raised when a message to i3 is unsuccessful.
+    That is, when it contains 'success': false in its JSON formatted response.
+    """
+    @classmethod
+    def parse(cls, response):
         if response and 'error' in response:
-            return MessageError(response['error'])
+            return cls(response['error'])
         return None
 
 
