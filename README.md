@@ -83,7 +83,7 @@ attribute and its parameters.
 Other message types
 -------------------
 
-Ok, command is one type of message, but what about the other ones? Well, they
+OK, command is one type of message, but what about the other ones? Well, they
 have to be accessed in a bit different way. You see, when we changed the layout
 to tabbed, we didn't have to say that it's a _command_ type of message. But for
 other types we'll have to specify the name of the type.
@@ -97,7 +97,7 @@ for workspace in workspaces:
     print(workspace['name'])
 ```
 
-If the attribute you accesed is an existing message type, then the resulting
+If the attribute you accessed is an existing message type, then the resulting
 function sends a message as a parameter. In fact, we could change the current
 layout to stacked like so:
 
@@ -119,6 +119,50 @@ for get_outputs: GET_OUTPUTS, '3', 3
 
 i3.py is case insensitive when it comes to message types. This also holds true
 for accessing non-existent attributes, like `i3.GeT_OuTpUtS()`.
+
+
+Convenience functions
+---------------------
+
+Since all returned data is in a form of a dictionaries or lists, some
+convenience function have been written.
+
+### i3.window
+
+This function will except a command and window class or/and title. For example,
+let's say you want to focus a window titled 'My document - Some editor'. This
+translates to `[title="My document - Some editor"] focus` in i3's syntax and can
+be done like so from i3-py:
+`i3.command('[title="My document - Some editor"] focus')`. This not very
+convenient, however. So, there's this function:
+
+```python
+i3.window('focus', title='My document - Some editor')
+```
+
+You can also add class with `cls` keyword argument.
+
+
+### i3.filter
+
+Some calls to i3 will return a huge amount of data, namely `i3.get_tree`. It can
+be quite stressful to find what you want in such large dictionary. i3-py
+provides this convenience function that will filter the given tree:
+
+```python
+i3.filter(conditions={'focused': False})
+```
+
+The above would get you all unfocused nodes in the tree. One useful thing would
+be to get a list of windows. Since windows are just leaf nodes (that is, nodes
+without sub-nodes), you can do this:
+
+```python
+i3.filter(conditions={'nodes':[]})
+```
+
+You can also supply your own tree with `tree` keyword argument.
+
 
 Lets continue to more advanced stuff...
 
@@ -148,7 +192,7 @@ def my_function(event, data, subscription):
     if <enough of this, let's end subscription>:
         subscription.close()
 
-subscription = i3.Subcsription(my_function, 'workspace')
+subscription = i3.Subscription(my_function, 'workspace')
 ```
 
 There are more parameters available for Subscription class, but some are too
@@ -175,7 +219,7 @@ Sockets are created with the help of `i3.Socket` class. The class has the
 following parameters, all of them optional:
 
  - path of the i3-wm's socket
- - timeout in seconds when receving the message
+ - timeout in seconds when receiving the message
  - chunk size in bytes of a single chunk that is send to i3-wm
  - magic string, that i3-wm checks for (it is "i3-ipc")
 
