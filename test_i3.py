@@ -69,7 +69,7 @@ class SocketTest(unittest.TestCase):
         packed = i3.default_socket().pack(0, "haha")
         if py3:
             self.assertIsInstance(packed, bytes)
-    
+
 
 class GeneralTest(unittest.TestCase):
     def setUp(self):
@@ -85,6 +85,23 @@ class GeneralTest(unittest.TestCase):
         data = {'success': True}
         self.assertTrue(i3.success(data))
     
+    def test_window(self):
+        self.assertTrue(i3.window('focus', cls='Firefox'))
+    
+    def test_filter1(self):
+        windows = i3.filter(conditions={'nodes':[]})
+        for window in windows:
+            self.assertEqual(window['nodes'], [])
+    
+    def test_filter2(self):
+        unfocused_windows = i3.filter(conditions={'focused': False})
+        parent_count = 0
+        for window in unfocused_windows:
+            self.assertEqual(window['focused'], False)
+            if window['nodes'] != []:
+                parent_count += 1
+        self.assertGreater(parent_count, 0)
+
 
 if __name__ == '__main__':
     for Test in [ParseTest, SocketTest, GeneralTest]:
