@@ -29,7 +29,7 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.4.2'
+__version__ = '0.4.4'
 __date__ = '2012-02-12'
 __license__ = 'GNU GPL 3'
 
@@ -437,14 +437,30 @@ def get_socket_path():
     return output
 
 
-def success(json_response):
+def success(response):
     """
     Convenience method for checking success value.
     Returns None if the "success" key isn't in the received message.
     """
-    if isinstance(json_response, dict) and 'success' in json_response:
-        return json_response['success']
+    if isinstance(response, dict) and 'success' in response:
+        return response['success']
     return None
+
+
+def window(command, cls=None, title=None):
+    """
+    Sends a command to a window of a given title and/or class. Example:
+      i3.window('focus', cls='Firefox')
+    """
+    cmd = '['
+    if not command and (cmd or title):
+        return None
+    if cls:
+        cmd += 'class="%s"' % cls
+    if title:
+        cmd += 'title="%s"' % title
+    cmd += '] %s' % command
+    return success(msg('command', cmd))
 
 
 """ The magic starts here """
