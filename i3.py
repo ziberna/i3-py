@@ -29,8 +29,8 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.4.2'
-__date__ = '2012-02-12'
+__version__ = '0.5.0'
+__date__ = '2012-27-12'
 __license__ = 'GNU GPL 3'
 
 
@@ -437,17 +437,55 @@ def get_socket_path():
     return output
 
 
-def success(json_response):
+def success(response):
     """
     Convenience method for checking success value.
     Returns None if the "success" key isn't in the received message.
     """
-    if isinstance(json_response, dict) and 'success' in json_response:
-        return json_response['success']
+    if isinstance(response, dict) and 'success' in response:
+        return response['success']
     return None
 
 
-""" The magic starts here """
+def window(command, cls=None, title=None):
+    """
+    Sends a command to a window of a given title and/or class. Example:
+      i3.window('focus', cls='Firefox')
+    """
+    cmd = '['
+    if not command and (cmd or title):
+        return None
+    if cls:
+        cmd += 'class="%s"' % cls
+    if title:
+        cmd += 'title="%s"' % title
+    cmd += '] %s' % command
+    return success(msg('command', cmd))
+
+
+def filter(tree=None, conditions=None):
+    """
+    Filters a tree based on given conditions. For example, to get a list of
+    leaf nodes (i.e. windows) in the current tree:
+      i3.filter(conditions={'nodes':[]})
+    `conditions` is a dictionary of key and value pairs.
+    """
+    if tree == None:
+        tree = msg('get_tree')
+    if not conditions:
+        conditions = {}
+    for key, value in conditions.items():
+        if key not in tree or tree[key] != value:
+            break
+    else:
+        return [tree]
+    matches = []
+    if 'nodes' in tree:
+        for node in tree['nodes']:
+            matches.extend(filter(node, conditions))
+    return matches
+
+
 class i3(types.ModuleType):
     """
     i3.py is a Python module for communicating with the i3 window manager.
