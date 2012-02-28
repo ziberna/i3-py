@@ -29,7 +29,7 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.1'
+__version__ = '0.5.2'
 __date__ = '2012-28-12'
 __license__ = 'GNU GPL 3'
 
@@ -50,7 +50,9 @@ EVENT_TYPES = [
 ]
 
 
-class MessageTypeError(Exception):
+class i3Exception(Exception): pass
+
+class MessageTypeError(i3Exception):
     """
     Raised when message type isn't available. See i3.MSG_TYPES.
     """
@@ -66,7 +68,7 @@ class EventTypeError(MessageTypeError):
     def __str__(self):
         return 'Event type "%s" isn\'t available' % self.type
 
-class MessageError(Exception):
+class MessageError(i3Exception):
     """
     Raised when a message to i3 is unsuccessful.
     That is, when it contains 'success': false in its JSON formatted response.
@@ -77,7 +79,7 @@ class MessageError(Exception):
             return cls(response['error'])
         return None
 
-class ConnectionError(Exception):
+class ConnectionError(i3Exception):
     """
     Raised when a socket couldn't connect to the window manager.
     """
