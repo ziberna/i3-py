@@ -29,8 +29,8 @@ import types
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.0'
-__date__ = '2012-27-12'
+__version__ = '0.5.1'
+__date__ = '2012-28-12'
 __license__ = 'GNU GPL 3'
 
 
@@ -76,6 +76,15 @@ class MessageError(Exception):
         if response and 'error' in response:
             return cls(response['error'])
         return None
+
+class ConnectionError(Exception):
+    """
+    Raised when a socket couldn't connect to the window manager.
+    """
+    def __init__(self, socket_path):
+        self.socket_path = socket_path
+    def __str__(self):
+        return "Could not connect to socket at '%s'" % self.socket_path
 
 
 def parse_msg_type(msg_type):
@@ -159,7 +168,14 @@ class Socket(object):
         """
         if not self.connected:
             self.initialize()
-            self.socket.connect(path if path else self.path)
+            if not path:
+                path = self.path
+            try:
+                self.socket.connect(path)
+            except socks.error:
+                self.socket = None
+            if not self.socket:
+                raise ConnectionError(path)
     
     def get(self, msg_type, payload=''):
         """
