@@ -25,7 +25,7 @@ import struct
 import threading
 import time
 
-import types
+ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
@@ -503,7 +503,7 @@ def filter(tree=None, conditions=None):
     return matches
 
 
-class i3(types.ModuleType):
+class i3(ModuleType):
     """
     i3.py is a Python module for communicating with the i3 window manager.
     """
