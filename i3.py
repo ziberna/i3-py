@@ -50,14 +50,15 @@ EVENT_TYPES = [
 ]
 
 
-class i3Exception(Exception): pass
+class i3Exception(Exception):
+    pass
 
 class MessageTypeError(i3Exception):
     """
     Raised when message type isn't available. See i3.MSG_TYPES.
     """
     def __init__(self, type):
-        msg = 'Message type "%s" isn\'t available' % type
+        msg = "Message type '%s' isn't available" % type
         super(MessageTypeError, self).__init__(msg)
 
 class EventTypeError(i3Exception):
@@ -65,7 +66,7 @@ class EventTypeError(i3Exception):
     Raised when even type isn't available. See i3.EVENT_TYPES.
     """
     def __init__(self, type):
-        msg = 'Event type "%s" isn\'t available' % type
+        msg = "Event type '%s' isn't available" % type
         super(EventTypeError, self).__init__(msg)
 
 class MessageError(i3Exception):
@@ -280,7 +281,7 @@ class Socket(object):
         Closes the socket connection.
         """
         self.socket.close()
-    
+
 
 class Subscription(threading.Thread):
     """
@@ -360,7 +361,7 @@ class Subscription(threading.Thread):
         self.event_socket.close()
         if self.data_socket is not default_socket():
             self.data_socket.close()
-    
+
 
 def __call_cmd__(cmd):
     """
@@ -524,7 +525,7 @@ class i3(ModuleType):
             return self.__module__.__function__(type=name)
         else:
             return self.__module__.__function__(type='command', message=name)
-    
+
 
 # Turn the module into an i3 object
 sys.modules[__name__] = i3(sys.modules[__name__])
