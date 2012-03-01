@@ -93,10 +93,8 @@ def main(socket, type, timeout, message):
         else:
             output = i3.msg(type, message)
             print(output)
-    except i3.MessageTypeError as msg_error:
-        print(msg_error)
-    except i3.EventTypeError as event_error:
-        print(event_error)
+    except i3.i3Exception as i3error:
+        print(i3error)
 
 
 if __name__ == '__main__':
