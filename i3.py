@@ -57,16 +57,16 @@ class MessageTypeError(i3Exception):
     Raised when message type isn't available. See i3.MSG_TYPES.
     """
     def __init__(self, type):
-        self.type = type
-    def __str__(self):
-        return 'Message type "%s" isn\'t available' % self.type
+        msg = 'Message type "%s" isn\'t available' % type
+        super(MessageTypeError, self).__init__(msg)
 
-class EventTypeError(MessageTypeError):
+class EventTypeError(i3Exception):
     """
     Raised when even type isn't available. See i3.EVENT_TYPES.
     """
-    def __str__(self):
-        return 'Event type "%s" isn\'t available' % self.type
+    def __init__(self, type):
+        msg = 'Event type "%s" isn\'t available' % type
+        super(EventTypeError, self).__init__(msg)
 
 class MessageError(i3Exception):
     """
@@ -84,9 +84,8 @@ class ConnectionError(i3Exception):
     Raised when a socket couldn't connect to the window manager.
     """
     def __init__(self, socket_path):
-        self.socket_path = socket_path
-    def __str__(self):
-        return "Could not connect to socket at '%s'" % self.socket_path
+        msg = "Could not connect to socket at '%s'" % socket_path
+        super(ConnectionError, self).__init__(msg)
 
 
 def parse_msg_type(msg_type):
