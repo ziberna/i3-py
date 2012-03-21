@@ -29,7 +29,7 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 __date__ = '2012-28-12'
 __license__ = 'GNU GPL 3'
 
@@ -175,8 +175,6 @@ class Socket(object):
             try:
                 self.socket.connect(path)
             except socks.error:
-                self.socket = None
-            if not self.socket:
                 raise ConnectionError(path)
     
     def get(self, msg_type, payload=''):
