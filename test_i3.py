@@ -50,6 +50,11 @@ class SocketTest(unittest.TestCase):
     def setUp(self):
         pass
     
+    def test_connection(self):
+        def connect():
+            return i3.Socket('/nil/2971.socket')
+        self.assertRaises(i3.ConnectionError, connect)
+    
     def test_response(self, socket=i3.default_socket()):
         workspaces = socket.get('get_workspaces')
         self.assertIsNotNone(workspaces)
