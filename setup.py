@@ -17,8 +17,8 @@ setup(
     long_description=long_description,
     author='Jure Ziberna',
     author_email='j.ziberna@gmail.com',
-    url='https://github.com/jzib/i3-py',
-    version='0.5.4',
+    url='https://github.com/ziberna/i3-py',
+    version='0.5.4.1',
     license='GNU GPL 3',
     py_modules=['i3', 'i3wsbar']
 )
