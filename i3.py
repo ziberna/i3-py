@@ -29,8 +29,8 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.3'
-__date__ = '2012-28-12'
+__version__ = '0.5.4'
+__date__ = '2012-03-21'
 __license__ = 'GNU GPL 3'
 
 
@@ -376,13 +376,15 @@ def __call_cmd__(cmd):
 
 
 __socket__ = None
-def default_socket():
+def default_socket(socket=None):
     """
     Returns an already initialized socket. The socket was created with
     default values.
     """
     global __socket__
-    if not __socket__:
+    if socket and isinstance(socket, Socket):
+        __socket__ = socket
+    elif not __socket__:
         __socket__ = Socket()
     return __socket__
 

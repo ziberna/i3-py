@@ -66,7 +66,7 @@ def main(socket, type, timeout, message):
             return False
     # Initializes default socket with given path and timeout
     try:
-        i3.__socket__ = i3.Socket(path=socket, timeout=timeout)
+        i3.default_socket(i3.Socket(path=socket, timeout=timeout))
     except i3.ConnectionError:
         print("Couldn't connect to socket at '%s'." % socket)
         return False
