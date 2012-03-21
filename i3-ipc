@@ -64,11 +64,12 @@ def main(socket, type, timeout, message):
         if not socket:
             print("Couldn't get socket path. Are you sure i3 is running?")
             return False
-    elif not os.path.exists(socket):
-        print("Socket '%s' doesn't exist" % socket)
-        return False
     # Initializes default socket with given path and timeout
-    i3.__socket__ = i3.Socket(path=socket, timeout=timeout)
+    try:
+        i3.__socket__ = i3.Socket(path=socket, timeout=timeout)
+    except i3.ConnectionError:
+        print("Couldn't connect to socket at '%s'." % socket)
+        return False
     # Format input
     if type in i3.EVENT_TYPES:
         event_type = type
@@ -84,19 +85,16 @@ def main(socket, type, timeout, message):
             else:
                 event = ''
         else:
-            # Let if fail, it will fail early
+            # Let if fail
             event_type = ''
-    # Let unavailable message/event types fail, exceptions will handle the rest
     try:
         if type == 'subscribe':
             i3.subscribe(event_type, event)
         else:
             output = i3.msg(type, message)
             print(output)
-    except i3.MessageTypeError as msg_error:
-        print(msg_error)
-    except i3.EventTypeError as event_error:
-        print(event_error)
+    except i3.i3Exception as i3error:
+        print(i3error)
 
 
 if __name__ == '__main__':

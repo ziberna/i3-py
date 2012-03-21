@@ -25,11 +25,11 @@ import struct
 import threading
 import time
 
-import types
+ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.2'
+__version__ = '0.5.3'
 __date__ = '2012-28-12'
 __license__ = 'GNU GPL 3'
 
@@ -50,23 +50,24 @@ EVENT_TYPES = [
 ]
 
 
-class i3Exception(Exception): pass
+class i3Exception(Exception):
+    pass
 
 class MessageTypeError(i3Exception):
     """
     Raised when message type isn't available. See i3.MSG_TYPES.
     """
     def __init__(self, type):
-        self.type = type
-    def __str__(self):
-        return 'Message type "%s" isn\'t available' % self.type
+        msg = "Message type '%s' isn't available" % type
+        super(MessageTypeError, self).__init__(msg)
 
-class EventTypeError(MessageTypeError):
+class EventTypeError(i3Exception):
     """
     Raised when even type isn't available. See i3.EVENT_TYPES.
     """
-    def __str__(self):
-        return 'Event type "%s" isn\'t available' % self.type
+    def __init__(self, type):
+        msg = "Event type '%s' isn't available" % type
+        super(EventTypeError, self).__init__(msg)
 
 class MessageError(i3Exception):
     """
@@ -84,9 +85,8 @@ class ConnectionError(i3Exception):
     Raised when a socket couldn't connect to the window manager.
     """
     def __init__(self, socket_path):
-        self.socket_path = socket_path
-    def __str__(self):
-        return "Could not connect to socket at '%s'" % self.socket_path
+        msg = "Could not connect to socket at '%s'" % socket_path
+        super(ConnectionError, self).__init__(msg)
 
 
 def parse_msg_type(msg_type):
@@ -175,8 +175,6 @@ class Socket(object):
             try:
                 self.socket.connect(path)
             except socks.error:
-                self.socket = None
-            if not self.socket:
                 raise ConnectionError(path)
     
     def get(self, msg_type, payload=''):
@@ -281,7 +279,7 @@ class Socket(object):
         Closes the socket connection.
         """
         self.socket.close()
-    
+
 
 class Subscription(threading.Thread):
     """
@@ -361,7 +359,7 @@ class Subscription(threading.Thread):
         self.event_socket.close()
         if self.data_socket is not default_socket():
             self.data_socket.close()
-    
+
 
 def __call_cmd__(cmd):
     """
@@ -504,7 +502,7 @@ def filter(tree=None, conditions=None):
     return matches
 
 
-class i3(types.ModuleType):
+class i3(ModuleType):
     """
     i3.py is a Python module for communicating with the i3 window manager.
     """
@@ -525,7 +523,7 @@ class i3(types.ModuleType):
             return self.__module__.__function__(type=name)
         else:
             return self.__module__.__function__(type='command', message=name)
-    
+
 
 # Turn the module into an i3 object
 sys.modules[__name__] = i3(sys.modules[__name__])
