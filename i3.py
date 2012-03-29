@@ -471,8 +471,6 @@ def window(command, cls=None, title=None):
       i3.window('focus', cls='Firefox')
     """
     cmd = '['
-    if not command and (cmd or title):
-        return None
     if cls:
         cmd += 'class="%s"' % cls
     if title:
