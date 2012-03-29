@@ -94,12 +94,12 @@ class GeneralTest(unittest.TestCase):
         self.assertTrue(i3.window('focus', cls='Firefox'))
     
     def test_filter1(self):
-        windows = i3.filter(conditions={'nodes':[]})
+        windows = i3.filter(nodes=[])
         for window in windows:
             self.assertEqual(window['nodes'], [])
     
     def test_filter2(self):
-        unfocused_windows = i3.filter(conditions={'focused': False})
+        unfocused_windows = i3.filter(focused= False)
         parent_count = 0
         for window in unfocused_windows:
             self.assertEqual(window['focused'], False)
