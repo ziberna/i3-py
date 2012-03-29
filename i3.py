@@ -29,8 +29,8 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.4'
-__date__ = '2012-03-21'
+__version__ = '0.5.5'
+__date__ = '2012-03-29'
 __license__ = 'GNU GPL 3'
 
 
