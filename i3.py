@@ -29,8 +29,8 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.3'
-__date__ = '2012-28-12'
+__version__ = '0.5.4'
+__date__ = '2012-03-21'
 __license__ = 'GNU GPL 3'
 
 
@@ -376,13 +376,15 @@ def __call_cmd__(cmd):
 
 
 __socket__ = None
-def default_socket():
+def default_socket(socket=None):
     """
     Returns an already initialized socket. The socket was created with
     default values.
     """
     global __socket__
-    if not __socket__:
+    if socket and isinstance(socket, Socket):
+        __socket__ = socket
+    elif not __socket__:
         __socket__ = Socket()
     return __socket__
 
@@ -479,12 +481,11 @@ def window(command, cls=None, title=None):
     return success(msg('command', cmd))
 
 
-def filter(tree=None, conditions=None):
+def filter(tree=None, **conditions):
     """
     Filters a tree based on given conditions. For example, to get a list of
-    leaf nodes (i.e. windows) in the current tree:
-      i3.filter(conditions={'nodes':[]})
-    `conditions` is a dictionary of key and value pairs.
+    unfocused windows (leaf nodes) in the current tree:
+      i3.filter(nodes=[], focused=False)
     """
     if tree == None:
         tree = msg('get_tree')
@@ -498,7 +499,7 @@ def filter(tree=None, conditions=None):
     matches = []
     if 'nodes' in tree:
         for node in tree['nodes']:
-            matches.extend(filter(node, conditions))
+            matches.extend(filter(node, **conditions))
     return matches
 
 
