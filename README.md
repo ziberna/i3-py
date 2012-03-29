@@ -150,15 +150,15 @@ be quite stressful to find what you want in such large dictionary. i3-py
 provides this convenience function that will filter the given tree:
 
 ```python
-i3.filter(conditions={'focused': False})
+i3.filter(focused=False)
 ```
 
 The above would get you all unfocused nodes in the tree. One useful thing would
-be to get a list of windows. Since windows are just leaf nodes (that is, nodes
-without sub-nodes), you can do this:
+be to get a list of focused windows. Since windows are just leaf nodes (that is,
+nodes without sub-nodes), you can do this:
 
 ```python
-i3.filter(conditions={'nodes':[]})
+i3.filter(nodes=[], focused=True)
 ```
 
 You can also supply your own tree with `tree` keyword argument.

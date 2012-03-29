@@ -481,12 +481,11 @@ def window(command, cls=None, title=None):
     return success(msg('command', cmd))
 
 
-def filter(tree=None, conditions=None):
+def filter(tree=None, **conditions):
     """
     Filters a tree based on given conditions. For example, to get a list of
-    leaf nodes (i.e. windows) in the current tree:
-      i3.filter(conditions={'nodes':[]})
-    `conditions` is a dictionary of key and value pairs.
+    unfocused windows (leaf nodes) in the current tree:
+      i3.filter(nodes=[], focused=False)
     """
     if tree == None:
         tree = msg('get_tree')
@@ -500,7 +499,7 @@ def filter(tree=None, conditions=None):
     matches = []
     if 'nodes' in tree:
         for node in tree['nodes']:
-            matches.extend(filter(node, conditions))
+            matches.extend(filter(node, **conditions))
     return matches
 
 
