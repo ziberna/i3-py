@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #======================================================================
 # i3 (Python module for communicating with i3 window manager)
 # Copyright (C) 2012  Jure Ziberna
@@ -17,15 +18,11 @@
 #======================================================================
 
 
+import sys
+import time
 import subprocess
 
 import i3
-
-
-__author__ = 'Jure Ziberna'
-__version__ = '0.1.0'
-__date__ = '2012-02-06'
-__license__ = 'GNU GPL 3'
 
 
 class Colors(object):
@@ -160,4 +157,16 @@ class i3wsbar(object):
         """
         self.subscription.close()
         self.bar.terminate()
-    
+
+
+if __name__ == '__main__':
+    args = sys.argv[1:]
+    bar = i3wsbar(bar_args=args)
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print('')  # force new line
+    finally:
+        bar.quit()
+
