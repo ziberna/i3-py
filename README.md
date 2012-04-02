@@ -11,12 +11,6 @@ Well, from [i3's website](http://i3wm.org/) itself:
 i3-py contains tools for i3 users and Python developers. To avoid the confusion,
 I'll be refering to i3 as _i3-wm_ from here on.
 
-The contents of i3-py project are:
-
- - __i3.py__, a Python module for communicating with i3-wm
- - __i3-ipc__, a command-line script that wraps some of i3.py's features
- - __i3wsbar__, a Python implementation of i3-wm workspace bar
-
 
 Install
 -------
@@ -26,14 +20,20 @@ Install
     pip2 install i3-py
 
 
+Run examples
+------------
+
+See `examples/` and their
+[README](https://github.com/ziberna/i3-py/tree/master/examples). 
+
+
 --------------------------------------------------------------------------------
 
-
-i3.py
+Usage
 =====
 
-First, the basics
------------------
+The basics
+----------
 
 The communication with i3-wm is through sockets. There are 7 types of messages:
 
