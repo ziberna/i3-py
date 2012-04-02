@@ -18,6 +18,14 @@ The contents of i3-py project are:
  - __i3wsbar__, a Python implementation of i3-wm workspace bar
 
 
+Install
+-------
+
+    pip install i3-py
+    # OR/AND (for Python 2.x)
+    pip2 install i3-py
+
+
 --------------------------------------------------------------------------------
 
 
@@ -263,69 +271,13 @@ sure to check the docs via Python's `help` function.
 
 --------------------------------------------------------------------------------
 
-i3-ipc
-======
-
-i3-ipc is a Python implementation of an i3-ipc interface and is actually just a
-wrapper around some of the features of i3.py. At the moment it is more or less
-just a clone of an already existing program called i3-msg from the i3-wm itself.
-
-Usage
------
-
-    usage: i3-ipc [-h] [-s <socket>] [-t <type>] [-T <timeout>]
-                  [<message> [<message> ...]]
-    
-    i3-ipc 0.3.0 (2012-02-06). Implemented in Python.
-    
-    positional arguments:
-      <message>     message or "payload" to send, can be multiple strings
-    
-    optional arguments:
-      -h, --help    show this help message and exit
-      -s <socket>   custom path to an i3 socket file
-      -t <type>     message type in text form (e.g. "get_tree")
-      -T <timeout>  seconds before socket times out, floating point values allowed
-
-Examples
---------
-
-    $ i3-ipc focus left
-    {'success': True}
-    $ i3-ipc -t get_tree
-    <huge dictionary>
-    $ i3-ipc -t 3    # equivalent to i3-ipc -t get_outputs
-    $ i3-ipc -t workspace init    # equivalent to i3-ipc -t subscribe workspace init
-    <events>
-    <CTRL-C>
-    $ i3-ipc workspace 5: media    # switches to workspace named "5: media"
-    {'success': True}
-
-
---------------------------------------------------------------------------------
-
-
-i3wsbar
-=======
-
-i3wsbar is an example of how can i3.py be used in Python code. i3wsbar.py uses
-__dzen2__ by default. Any arguments that you pass to i3wsbar will be passed to
-dzen2.
-
-If you want to customize workspace button colors, you can do so by editing the
-provided script that launches an i3wsbar. i3wsbar module contains an class
-called Colors, which contains all possible colors. Again, see the docs.
-
-
---------------------------------------------------------------------------------
-
 About
 =====
 
 Author: Jure Žiberna  
 License: GNU GPL 3
 
-Thanks to:
+Thanks:
 
  - [i3 window manager](http://i3wm.org/) and its author Michael Stapelberg
  - [Nathan Middleton and his i3ipc](http://github.com/thepub/i3ipc) and its
@@ -336,13 +288,15 @@ Thanks to:
 
 References:
 
- - [i3-wm's ipc page](http://i3wm.org/docs/ipc.html) contains more information
-   about an i3-ipc interface.
+ - [i3-wm's ipc page](http://i3wm.org/docs/ipc.html) has more information
+   about i3-ipc interface.
+ - [i3-wm's user guide](http://i3wm.org/docs/userguide.html) contains lots of
+   commands that you can use with i3-py.
 
 i3-py was tested with Python 3.2.2 and 2.7.2.
 
 Dependencies:
 
 - i3-wm
-- python
+- Python
 
