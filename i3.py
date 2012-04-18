@@ -29,7 +29,7 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.7'
+__version__ = '0.6.0'
 __date__ = '2012-04-18'
 __license__ = 'GNU GPL 3'
 
@@ -406,11 +406,11 @@ def __function__(type, message=''):
     message string, calls i3.msg with the resulting arguments and returns a
     response. If message type was command, the function returns success value.
     """
-    message = message.replace('__', ' ')
-    
-    def function(*args):
-        message_full = ' '.join([message] + list(args))
-        response = msg(type, message_full)
+    def function(*args, **criteria):
+        msg_full = ' '.join([message] + list(args))
+        if criteria:
+            msg_full = '%s %s' % (container(**criteria), msg_full)
+        response = msg(type, msg_full)
         error = MessageError.parse(response)
         if error:
             raise error
@@ -418,8 +418,8 @@ def __function__(type, message=''):
             return success(response)  # return the value of the success key
         else:
             return response
-    
     function.__name__ = type
+    function.__doc__ = 'Message sender (type: %s, message: %s)' % (type, message)
     return function
 
 
