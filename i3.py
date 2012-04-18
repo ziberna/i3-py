@@ -29,8 +29,8 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.5'
-__date__ = '2012-03-29'
+__version__ = '0.5.6'
+__date__ = '2012-04-18'
 __license__ = 'GNU GPL 3'
 
 
@@ -465,18 +465,12 @@ def success(response):
     return None
 
 
-def window(command, cls=None, title=None):
+def container(**criteria):
     """
-    Sends a command to a window of a given title and/or class. Example:
-      i3.window('focus', cls='Firefox')
+    Turns keyword arguments into a formatted contaner criteria.
     """
-    cmd = '['
-    if cls:
-        cmd += 'class="%s"' % cls
-    if title:
-        cmd += 'title="%s"' % title
-    cmd += '] %s' % command
-    return success(msg('command', cmd))
+    criteria = ['%s="%s"' % (key, val) for key, val in criteria.items()]
+    return '[%s]' % ' '.join(criteria)
 
 
 def filter(tree=None, **conditions):

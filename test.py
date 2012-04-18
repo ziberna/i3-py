@@ -90,8 +90,14 @@ class GeneralTest(unittest.TestCase):
         data = {'success': True}
         self.assertTrue(i3.success(data))
     
-    def test_window(self):
-        self.assertTrue(i3.window('focus', cls='Firefox'))
+    def test_container(self):
+        container = i3.container(title='abc', con_id=123)
+        output = ['[title="abc" con_id="123"]',
+                '[con_id="123" title="abc"]']
+        self.assertTrue(container in output)
+
+    def test_criteria(self):
+        self.assertTrue(i3.focus(clasS='xterm'))
     
     def test_filter1(self):
         windows = i3.filter(nodes=[])
