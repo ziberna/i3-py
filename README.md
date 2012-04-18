@@ -72,20 +72,19 @@ if success:
 Each command is just a function which excepts any number of parameters. i3.py
 joins such function and its parameters into a message to i3-wm.
 
-Since a full message of the above command is "layout tabbed", it could also be
-written like so:
+None of these functions are actually implemented. i3.py checks each attribute
+as it is accessed. If it exists in the module, it returns that attribute.
+Otherwise it creates a function on the fly. Calling that function sends a
+message to i3-wm, based on the name of the attribute and its parameters.
+
+### container criteria
+
+These dynamic functions also take keyword arguments which specify container
+criteria. So if you want to focus a particular window, you can do it like so:
 
 ```python
-i3.layout__tabbed()
+i3.focus(title="window title")
 ```
-
-Any double underscores are replaced by a space in a message to i3-wm.
-
-Saying this, you might have guessed that none of these functions are actually
-implemented. i3.py checks each attribute as it is accessed. If it exists in the
-module, it returns that attribute. Otherwise it creates a function on the fly.
-Calling that function sends a message to i3-wm, based on the name of the
-attribute and its parameters.
 
 
 Other message types
@@ -135,20 +134,16 @@ Convenience functions
 Since all returned data is in a form of a dictionaries or lists, some
 convenience function have been written.
 
-### i3.window
+### i3.container
 
-This function will except a command and window class or/and title. For example,
-let's say you want to focus a window titled 'My document - Some editor'. This
-translates to `[title="My document - Some editor"] focus` in i3's syntax and can
-be done like so from i3-py:
-`i3.command('[title="My document - Some editor"] focus')`. This not very
-convenient, however. So, there's this function:
+i3.container will take keyword arguments and format them into i3-wm's syntax
+for container criteria. Example:
 
 ```python
-i3.window('focus', title='My document - Some editor')
+i3.container(title="abc", con_id=123) # returns '[title="abc" con_id="123"]'
 ```
 
-You can also add class with `cls` keyword argument.
+This function is also used internally for dynamic methods.
 
 
 ### i3.filter
