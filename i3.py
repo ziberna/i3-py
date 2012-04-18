@@ -29,7 +29,7 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.5.6'
+__version__ = '0.5.7'
 __date__ = '2012-04-18'
 __license__ = 'GNU GPL 3'
 
@@ -462,7 +462,7 @@ def success(response):
     """
     if isinstance(response, dict) and 'success' in response:
         return response['success']
-    return None
+    return response
 
 
 def container(**criteria):
