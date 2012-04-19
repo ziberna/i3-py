@@ -29,8 +29,8 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.6.0'
-__date__ = '2012-04-18'
+__version__ = '0.6.1'
+__date__ = '2012-04-19'
 __license__ = 'GNU GPL 3'
 
 
@@ -481,6 +481,8 @@ def filter(tree=None, **conditions):
     """
     if tree == None:
         tree = msg('get_tree')
+    elif isinstance(tree, list):
+        tree = {'nodes': tree}
     if not conditions:
         conditions = {}
     for key, value in conditions.items():
