@@ -24,7 +24,7 @@ def i3clients():
         workspace = workspace[0]
         windows = i3.filter(workspace, nodes=[])
         instances = {}
-        # Adds windows and their ids to a dictionary
+        # Adds windows and their ids to the clients dictionary
         for window in windows:
             win_str = '[%s] %s' % (workspace['name'], window['name'])
             # Appends an instance number if other instances are present
@@ -45,7 +45,7 @@ def win_menu(clients, l=10):
             stdout=subprocess.PIPE)
     menu_str = '\n'.join(sorted(clients.keys()))
     # Popen.communicate returns a tuple stdout, stderr
-    win_str = dmenu.communicate(menu_str.encode())[0].decode().strip()
+    win_str = dmenu.communicate(menu_str.encode('utf-8'))[0].decode().strip()
     return clients.get(win_str, None)
 
 if __name__ == '__main__':
