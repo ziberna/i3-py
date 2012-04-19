@@ -8,11 +8,11 @@ def cycle():
     other = i3.filter(nodes=[], focused=False)
     # focus each previously unfocused window for 0.5 seconds
     for window in other:
-        i3.window('focus', title=window['name'])
+        i3.focus(con_id=window['id'])
         time.sleep(0.5)
     # focus the original windows
     for window in current:
-        i3.window('focus', title=window['name'])
+        i3.focus(con_id=window['id'])
 
 if __name__ == '__main__':
     cycle()
