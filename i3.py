@@ -483,8 +483,6 @@ def filter(tree=None, **conditions):
         tree = msg('get_tree')
     elif isinstance(tree, list):
         tree = {'nodes': tree}
-    if not conditions:
-        conditions = {}
     for key, value in conditions.items():
         if key not in tree or tree[key] != value:
             break
