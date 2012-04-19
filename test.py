@@ -105,14 +105,22 @@ class GeneralTest(unittest.TestCase):
             self.assertEqual(window['nodes'], [])
     
     def test_filter2(self):
-        unfocused_windows = i3.filter(focused= False)
+        unfocused_windows = i3.filter(focused=False)
         parent_count = 0
         for window in unfocused_windows:
             self.assertEqual(window['focused'], False)
             if window['nodes'] != []:
                 parent_count += 1
         self.assertGreater(parent_count, 0)
-
+    
+    def test_filter_function_wikipedia(self):
+        """You have to have Wikipedia tab opened in a browser."""
+        import re
+        func = lambda node: re.search(r'Wikipedia', node['name'])
+        nodes = i3.filter(function=func)
+        self.assertTrue(nodes != [])
+        for node in nodes:
+            self.assertTrue('free encyclopedia' in node['name'])
 
 if __name__ == '__main__':
     for Test in [ParseTest, SocketTest, GeneralTest]:

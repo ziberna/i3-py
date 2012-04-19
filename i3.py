@@ -473,25 +473,37 @@ def container(**criteria):
     return '[%s]' % ' '.join(criteria)
 
 
-def filter(tree=None, **conditions):
+def filter(tree=None, function=None, **conditions):
     """
     Filters a tree based on given conditions. For example, to get a list of
     unfocused windows (leaf nodes) in the current tree:
       i3.filter(nodes=[], focused=False)
+    The return value is always a list of matched items, even if there's
+    only one item that matches.
+    The user function should take a single node. The function doesn't have
+    to do any dict key or index checking (this is handled by i3.filter
+    internally).
     """
     if tree == None:
         tree = msg('get_tree')
     elif isinstance(tree, list):
         tree = {'nodes': tree}
-    for key, value in conditions.items():
-        if key not in tree or tree[key] != value:
-            break
+    if function:
+        try:
+            if function(tree):
+                return [tree]
+        except (KeyError, IndexError):
+            pass
     else:
-        return [tree]
+        for key, value in conditions.items():
+            if key not in tree or tree[key] != value:
+                break
+        else:
+            return [tree]
     matches = []
     if 'nodes' in tree:
         for node in tree['nodes']:
-            matches.extend(filter(node, **conditions))
+            matches.extend(filter(node, function, **conditions))
     return matches
 
 
