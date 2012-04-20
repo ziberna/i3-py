@@ -399,15 +399,17 @@ def msg(type, message=''):
     return response
 
 
-def __function__(type, message=''):
+def __function__(type, message='', *args, **crit):
     """
     Excepts a message type and message itself.
     Returns a function, which excepts arguments and adds them to the
     message string, calls i3.msg with the resulting arguments and returns a
     response. If message type was command, the function returns success value.
     """
-    def function(*args, **criteria):
-        msg_full = ' '.join([message] + list(args))
+    def function(*args2, **crit2):
+        msg_full = ' '.join([message] + list(args)  + list(args2))
+        criteria = dict(crit)
+        criteria.update(crit2)
         if criteria:
             msg_full = '%s %s' % (container(**criteria), msg_full)
         response = msg(type, msg_full)
