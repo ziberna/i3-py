@@ -209,7 +209,7 @@ class Socket(object):
     def receive(self):
         """
         Tries to receive a data. Unpacks the received byte string if
-        successful. Returns the current buffer on failure.
+        successful. Returns None on failure.
         """
         try:
             data = self.socket.recv(self.chunk_size)
@@ -333,7 +333,7 @@ class Subscription(threading.Thread):
         """
         Runs a listener loop until self.subscribed is set to False.
         Calls the given callback method with data and the object itself.
-        If event matches given one, then matching data is retrieved.
+        If event matches the given one, then matching data is retrieved.
         Otherwise, the event itself is sent to the callback.
         In that case 'change' key contains the thing that was changed.
         """
@@ -363,9 +363,7 @@ class Subscription(threading.Thread):
 
 def __call_cmd__(cmd):
     """
-    Excepts command arguments.
-    Returns output (stdout or stderr).
-    Uses subprocess module for executing the command.
+    Returns output (stdout or stderr) of the given command args.
     """
     try:
         output = subprocess.check_output(cmd)
@@ -378,8 +376,9 @@ def __call_cmd__(cmd):
 __socket__ = None
 def default_socket(socket=None):
     """
-    Returns an already initialized socket. The socket was created with
-    default values.
+    Returns i3.Socket object, which was initiliazed once with default values
+    if no argument is given.
+    Otherwise sets the default socket to the given socket.
     """
     global __socket__
     if socket and isinstance(socket, Socket):
@@ -391,9 +390,8 @@ def default_socket(socket=None):
 
 def msg(type, message=''):
     """
-    Excepts a message type and a message itself.
-    Talks to the i3 via socket.
-    Returns the response from the socket.
+    Takes a message type and a message itself.
+    Talks to the i3 via socket and returns the response from the socket.
     """
     response = default_socket().get(type, message)
     return response
@@ -401,10 +399,10 @@ def msg(type, message=''):
 
 def __function__(type, message='', *args, **crit):
     """
-    Excepts a message type and message itself.
-    Returns a function, which excepts arguments and adds them to the
-    message string, calls i3.msg with the resulting arguments and returns a
-    response. If message type was command, the function returns success value.
+    Accepts a message type, a message. Takes optional args and keyword
+    args which are present in all future calls of the resulting function.
+    Returns a function, which takes arguments and container criteria.
+    If message type was 'command', the function returns success value.
     """
     def function(*args2, **crit2):
         msg_full = ' '.join([message] + list(args)  + list(args2))
@@ -450,7 +448,7 @@ def subscribe(event_type, event=None, callback=None):
 
 def get_socket_path():
     """
-    Get the path via i3 command.
+    Gets the socket path via i3 command.
     """
     cmd = ['i3', '--get-socketpath']
     output = __call_cmd__(cmd)
@@ -460,7 +458,8 @@ def get_socket_path():
 def success(response):
     """
     Convenience method for checking success value.
-    Returns None if the "success" key isn't in the received message.
+    Returns original response if the "success" key isn't in the
+    received message.
     """
     if isinstance(response, dict) and 'success' in response:
         return response['success']
