@@ -29,8 +29,8 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.6.1'
-__date__ = '2012-04-19'
+__version__ = '0.6.3'
+__date__ = '2012-04-20'
 __license__ = 'GNU GPL 3'
 
 
@@ -475,6 +475,23 @@ def container(**criteria):
     return '[%s]' % ' '.join(criteria)
 
 
+def parent(con_id, tree=None):
+    """
+    Searches for a parent of a node/container, given the container id.
+    Returns None on if no container with given id exists (or if the
+    container is already a root node).
+    """
+    def has_child(node):
+        for child in node['nodes']:
+            if child['id'] == con_id:
+                return True
+        return False
+    parents = filter(tree, has_child)
+    if not parents or len(parents) > 1:
+        return None
+    return parents[0]
+
+ 
 def filter(tree=None, function=None, **conditions):
     """
     Filters a tree based on given conditions. For example, to get a list of
