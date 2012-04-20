@@ -20,7 +20,7 @@
 import sys
 import subprocess
 import json
-import socket as socks
+import socket
 import struct
 import threading
 import time
@@ -161,7 +161,7 @@ class Socket(object):
         """
         Initializes the socket.
         """
-        self.socket = socks.socket(socks.AF_UNIX, socks.SOCK_STREAM)
+        self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.socket.settimeout(self.timeout)
     
     def connect(self, path=None):
@@ -174,7 +174,7 @@ class Socket(object):
                 path = self.path
             try:
                 self.socket.connect(path)
-            except socks.error:
+            except socket.error:
                 raise ConnectionError(path)
     
     def get(self, msg_type, payload=''):
@@ -220,7 +220,7 @@ class Socket(object):
                 data += self.socket.recv(msg_length)
             data = self.buffer + data
             return self.unpack(data)
-        except socks.timeout:
+        except socket.timeout:
             return None
     
     def pack(self, msg_type, payload):
@@ -271,7 +271,7 @@ class Socket(object):
         try:
             self.get('command')
             return True
-        except socks.error:
+        except socket.error:
             return False
     
     def close(self):
@@ -326,7 +326,7 @@ class Subscription(threading.Thread):
         """
         try:
             self.listen()
-        except socks.error:
+        except socket.error:
             self.close()
     
     def listen(self):
@@ -467,7 +467,7 @@ def success(response):
 
 def container(**criteria):
     """
-    Turns keyword arguments into a formatted contaner criteria.
+    Turns keyword arguments into a formatted container criteria.
     """
     criteria = ['%s="%s"' % (key, val) for key, val in criteria.items()]
     return '[%s]' % ' '.join(criteria)
@@ -484,7 +484,7 @@ def filter(tree=None, function=None, **conditions):
     to do any dict key or index checking (this is handled by i3.filter
     internally).
     """
-    if tree == None:
+    if tree is None:
         tree = msg('get_tree')
     elif isinstance(tree, list):
         tree = {'nodes': tree}
