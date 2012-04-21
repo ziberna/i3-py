@@ -92,7 +92,7 @@ class ConnectionError(i3Exception):
 def parse_msg_type(msg_type):
     """
     Returns an i3-ipc code of the message type. Raises an exception if
-    given message type isn't available.
+    the given message type isn't available.
     """
     try:
         index = int(msg_type)
@@ -108,8 +108,8 @@ def parse_msg_type(msg_type):
 
 def parse_event_type(event_type):
     """
-    Return an i3-ipc string of the event_type. Raises an exception if
-    given event type isn't available.
+    Returns an i3-ipc string of the event_type. Raises an exception if
+    the given event type isn't available.
     """
     try:
         index = int(event_type)
@@ -128,7 +128,7 @@ class Socket(object):
     """
     Socket for communicating with the i3 window manager.
     Optional arguments:
-    - path of the i3 socket. Path is retrieved from the i3-wm itself via
+    - path of the i3 socket. Path is retrieved from i3-wm itself via
       "i3.get_socket_path()" if not provided.
     - timeout in seconds
     - chunk_size in bytes
@@ -302,7 +302,7 @@ class Subscription(threading.Thread):
                  data_socket=None):
         # Variable initialization
         if not callable(callback):
-            raise TypeError('callback must be callable')
+            raise TypeError('Callback must be callable')
         event_type = parse_event_type(event_type)
         self.callback = callback
         self.event_type = event_type

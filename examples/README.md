@@ -43,3 +43,11 @@ wsbar.py
 --------
 
 __wsbar.py__ launches a __dzen2__ bar that displays current workspaces.
+
+
+winmenu.py
+----------
+
+__winmenu.py__ launches dmenu (with vertical patch) with a list of clients,
+sorted after workspaces. Selecting a client jumps to that window. 
+
