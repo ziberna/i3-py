@@ -425,7 +425,7 @@ def __function__(type, message='', *args, **crit):
 
 def subscribe(event_type, event=None, callback=None):
     """
-    Excepts an event_type and event itself.
+    Accepts an event_type and event itself.
     Creates a new subscription, prints data on every event until
     KeyboardInterrupt is raised.
     """
@@ -477,7 +477,7 @@ def container(**criteria):
 def parent(con_id, tree=None):
     """
     Searches for a parent of a node/container, given the container id.
-    Returns None on if no container with given id exists (or if the
+    Returns None if no container with given id exists (or if the
     container is already a root node).
     """
     def has_child(node):

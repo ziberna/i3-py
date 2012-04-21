@@ -44,10 +44,8 @@ def win_menu(clients, l=10):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
     menu_str = '\n'.join(sorted(clients.keys()))
-    print(menu_str)
     # Popen.communicate returns a tuple stdout, stderr
     win_str = dmenu.communicate(menu_str.encode('utf-8'))[0].decode().rstrip()
-    print(win_str)
     return clients.get(win_str, None)
 
 if __name__ == '__main__':
