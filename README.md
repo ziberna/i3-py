@@ -41,7 +41,7 @@ The communication with i3-wm is through sockets. There are 7 types of messages:
  - get_workspaces (1)
  - subscribe (2)
  - get_outputs (3)
- - get_tree(4)
+ - get_tree (4)
  - get_marks (5)
  - get_bar_config (6)
 
@@ -69,8 +69,8 @@ if success:
     print('Successfully changed layout of the current workspace.')
 ```
 
-Each command is just a function which excepts any number of parameters. i3.py
-joins such function and its parameters into a message to i3-wm.
+Each command is just a function which accepts any number of parameters. i3.py
+formats this function and its parameters into a message to i3-wm.
 
 None of these functions are actually implemented. i3.py checks each attribute
 as it is accessed. If it exists in the module, it returns that attribute.
@@ -90,7 +90,7 @@ i3.focus(title="window title")
 Other message types
 -------------------
 
-OK, command is one type of message, but what about the other ones? Well, they
+OK, _command_ is one type of message, but what about the other ones? Well, they
 have to be accessed in a bit different way. You see, when we changed the layout
 to tabbed, we didn't have to say that it's a _command_ type of message. But for
 other types we'll have to specify the name of the type.
@@ -131,13 +131,13 @@ for accessing non-existent attributes, like `i3.GeT_OuTpUtS()`.
 Convenience functions
 ---------------------
 
-Since all returned data is in a form of a dictionaries or lists, some
-convenience function have been written.
+Since all returned data is in a form of a dictionary or list, some
+convenience function have been written to effectively work with the data.
 
 ### i3.container
 
-i3.container will take keyword arguments and format them into i3-wm's syntax
-for container criteria. Example:
+i3.container will take keyword arguments and formats them into i3-wm's syntax
+for container criteria. The resulting string can be used in i3.msg. Example:
 
 ```python
 i3.container(title="abc", con_id=123) # returns '[title="abc" con_id="123"]'
