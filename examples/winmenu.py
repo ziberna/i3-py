@@ -45,7 +45,7 @@ def win_menu(clients, l=10):
             stdout=subprocess.PIPE)
     menu_str = '\n'.join(sorted(clients.keys()))
     # Popen.communicate returns a tuple stdout, stderr
-    win_str = dmenu.communicate(menu_str.encode('utf-8'))[0].decode().rstrip()
+    win_str = dmenu.communicate(menu_str.encode('utf-8'))[0].decode('utf-8').rstrip()
     return clients.get(win_str, None)
 
 if __name__ == '__main__':
