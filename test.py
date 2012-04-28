@@ -88,7 +88,10 @@ class GeneralTest(unittest.TestCase):
     
     def test_success(self):
         data = {'success': True}
-        self.assertTrue(i3.success(data))
+        self.assertEqual(i3.success(data), True)
+        self.assertEqual(i3.success([data, {'success': False}]), [True, False])
+        data = {'success': False, 'error': 'Error message'}
+        self.assertIsInstance(i3.success(data), i3.MessageError)
     
     def test_container(self):
         container = i3.container(title='abc', con_id=123)

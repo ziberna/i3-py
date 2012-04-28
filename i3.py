@@ -29,8 +29,8 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.6.3'
-__date__ = '2012-04-20'
+__version__ = '0.6.4'
+__date__ = '2012-04-28'
 __license__ = 'GNU GPL 3'
 
 
@@ -74,11 +74,7 @@ class MessageError(i3Exception):
     Raised when a message to i3 is unsuccessful.
     That is, when it contains 'success': false in its JSON formatted response.
     """
-    @classmethod
-    def parse(cls, response):
-        if response and 'error' in response:
-            return cls(response['error'])
-        return None
+    pass
 
 class ConnectionError(i3Exception):
     """
@@ -411,13 +407,10 @@ def __function__(type, message='', *args, **crit):
         if criteria:
             msg_full = '%s %s' % (container(**criteria), msg_full)
         response = msg(type, msg_full)
-        error = MessageError.parse(response)
-        if error:
-            raise error
-        elif parse_msg_type(type) == 0:  # if it's a command message, then
-            return success(response)  # return the value of the success key
-        else:
-            return response
+        response = success(response)
+        if isinstance(response, i3Exception):
+            raise response
+        return response
     function.__name__ = type
     function.__doc__ = 'Message sender (type: %s, message: %s)' % (type, message)
     return function
@@ -457,12 +450,21 @@ def get_socket_path():
 
 def success(response):
     """
-    Convenience method for checking success value.
-    Returns original response if the "success" key isn't in the
-    received message.
+    Convenience method for filtering success values of a response.
+    Each success dictionary is replaces with boolean value.
+    i3.MessageError is returned if error key is found in any of the
+    success dictionaries.
     """
     if isinstance(response, dict) and 'success' in response:
+        if 'error' in response:
+            return MessageError(response['error'])
         return response['success']
+    elif isinstance(response, list):
+        for index, item in enumerate(response):
+            item = success(item)
+            if isinstance(item, i3Exception):
+                return item
+            response[index] = item
     return response
 
 
