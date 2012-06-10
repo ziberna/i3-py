@@ -41,6 +41,7 @@ class ParseTest(unittest.TestCase):
             self.assertRaises(i3.EventTypeError, i3.parse_event_type, str(val))
     
     def test_msg_error(self):
+        """If i3.yada doesn't pass, see http://bugs.i3wm.org/report/ticket/693"""
         self.assertRaises(i3.MessageError, i3.focus)  # missing argument
         self.assertRaises(i3.MessageError, i3.yada)  # doesn't exist
         self.assertRaises(i3.MessageError, i3.meh, 'some', 'args')
@@ -117,15 +118,16 @@ class GeneralTest(unittest.TestCase):
         self.assertGreater(parent_count, 0)
     
     def test_filter_function_wikipedia(self):
-        """You have to have Wikipedia tab opened in a browser."""
-        import re
-        func = lambda node: re.search(r'Wikipedia', node['name'])
+        """You have to have a Wikipedia tab opened in a browser."""
+        func = lambda node: 'Wikipedia' in node['name']
         nodes = i3.filter(function=func)
         self.assertTrue(nodes != [])
         for node in nodes:
             self.assertTrue('free encyclopedia' in node['name'])
 
 if __name__ == '__main__':
+    test_suits = []
     for Test in [ParseTest, SocketTest, GeneralTest]:
-        suite = unittest.TestLoader().loadTestsFromTestCase(Test)
-        unittest.TextTestRunner(verbosity=2).run(suite)
+        test_suits.append(unittest.TestLoader().loadTestsFromTestCase(Test))
+    unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(test_suits))
+

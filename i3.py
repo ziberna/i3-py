@@ -523,7 +523,7 @@ def filter(tree=None, function=None, **conditions):
     matches = []
     if 'nodes' in tree:
         for node in tree['nodes']:
-            matches.extend(filter(node, function, **conditions))
+            matches += filter(node, function, **conditions)
     return matches
 
 
