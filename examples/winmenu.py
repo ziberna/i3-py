@@ -24,11 +24,12 @@ def i3clients():
     """
     clients = {}
     lengths = {'workspace': 0, 'mark': 0}
+    tree = i3.get_tree()
     for ws in i3.get_workspaces():
         wsname = ws['name']
         if len(wsname) > lengths['workspace']:
             lengths['workspace'] = len(wsname)
-        workspace = i3.filter(name=wsname)
+        workspace = i3.filter(tree, name=wsname)
         if not workspace:
             continue
         workspace = workspace[0]
