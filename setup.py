@@ -12,9 +12,9 @@ setup(
     description='tools for i3 users and developers',
     long_description=long_description,
     author='Jure Ziberna',
-    author_email='j.ziberna@gmail.com',
+    author_email='jure@ziberna.org',
     url='https://github.com/ziberna/i3-py',
-    version='0.6.4',
+    version='0.6.5',
     license='GNU GPL 3',
     py_modules=['i3']
 )
