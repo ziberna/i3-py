@@ -29,8 +29,8 @@ ModuleType = type(sys)
 
 
 __author__ = 'Jure Ziberna'
-__version__ = '0.6.4'
-__date__ = '2012-04-28'
+__version__ = '0.6.5'
+__date__ = '2012-06-20'
 __license__ = 'GNU GPL 3'
 
 
@@ -507,7 +507,7 @@ def filter(tree=None, function=None, **conditions):
     if tree is None:
         tree = msg('get_tree')
     elif isinstance(tree, list):
-        tree = {'nodes': tree}
+        tree = {'list': tree}
     if function:
         try:
             if function(tree):
@@ -521,9 +521,10 @@ def filter(tree=None, function=None, **conditions):
         else:
             return [tree]
     matches = []
-    if 'nodes' in tree:
-        for node in tree['nodes']:
-            matches += filter(node, function, **conditions)
+    for nodes in ['nodes', 'floating_nodes', 'list']:
+        if nodes in tree:
+            for node in tree[nodes]:
+                matches += filter(node, function, **conditions)
     return matches
 
 
