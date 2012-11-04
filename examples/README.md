@@ -19,6 +19,12 @@ close after a few seconds and the script will switch back to the previously
 focused workspace.
 
 
+firstfree.py
+------------
+
+__firstfree.py__ will find the first free workspace and switch to it
+
+
 ipc.py
 ------
 
@@ -50,4 +56,3 @@ winmenu.py
 
 __winmenu.py__ launches dmenu (with vertical patch) with a list of clients,
 sorted after workspaces. Selecting a client jumps to that window. 
-
