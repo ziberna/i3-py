@@ -17,13 +17,12 @@ def i3clients():
     Each window text is of format "[workspace] window title (instance number)"
     """
     clients = {}
-    for ws_num in range(1,11):
-        workspace = i3.filter(num=ws_num)
-        if not workspace:
-            continue
-        workspace = workspace[0]
+    is_ws = lambda x: x['type'] == 4 and len(x['nodes'])
+    for workspace in i3.filter(function=is_ws):
+
         windows = i3.filter(workspace, nodes=[])
         instances = {}
+        
         # Adds windows and their ids to the clients dictionary
         for window in windows:
             win_str = '[%s] %s' % (workspace['name'], window['name'])
