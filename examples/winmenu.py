@@ -63,7 +63,7 @@ def i3clients():
     for con_id in clientlist:
         wslen = lengths['workspace']
         mlen = lengths['mark']
-        win_str = '[{k:<{v}}] {l:<{w}} {m} ({n})'.format(\
+        win_str = u'[{k:<{v}}] {l:<{w}} {m} ({n})'.format(\
                 k=clients[con_id]['ws'], v=wslen, \
                 l=clients[con_id]['mark'], w=mlen, \
                 m=clients[con_id]['name'], \
