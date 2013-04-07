@@ -3,11 +3,11 @@ import os
 import time
 
 term = os.environ.get('TERM', 'xterm')
-if 'rxvt-unicode' in term: 
+if 'rxvt-unicode' in term:
     term = 'urxvt'
 
 def fibonacci(num):
-    i3.exec(term)
+    i3.command('exec {}'.format(term))
     time.sleep(0.5)
     if num % 2 == 0:
         if num % 4 == 0:
