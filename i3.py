@@ -229,12 +229,15 @@ class Socket(object):
         msg_length = len(payload.encode('utf-8'))
         msg_type = parse_msg_type(msg_type)
         # "struct.pack" returns byte string, decoding it for concatenation
-        msg_length = struct.pack('I', msg_length).decode('utf-8')
-        msg_type = struct.pack('I', msg_type).decode('utf-8')
-        message = '%s%s%s%s' % (msg_magic, msg_length, msg_type, payload)
-        # Encoding the message back to byte string
-        return message.encode('utf-8')
+        msg_length = struct.pack('I', msg_length)
     
+        msg_type = struct.pack('I', msg_type)
+        message = '%s%s%s%s' % (msg_magic,
+                                msg_length,
+                                msg_type.encode('utf-8'),
+                                payload.encode('utf-8'))
+        # Encoding the message back to byte string
+        return message
     def unpack(self, data):
         """
         Unpacks the given byte string and parses the result from JSON.
