@@ -127,23 +127,18 @@ class Socket(object):
     - path of the i3 socket. Path is retrieved from i3-wm itself via
       "i3.get_socket_path()" if not provided.
     - timeout in seconds
-    - chunk_size in bytes
     - magic_string as a safety string for i3-ipc. Set to 'i3-ipc' by default.
     """
     magic_string = 'i3-ipc'  # safety string for i3-ipc
-    chunk_size = 1024  # in bytes
     timeout = 0.5  # in seconds
     buffer = b''  # byte string
     
-    def __init__(self, path=None, timeout=None, chunk_size=None,
-                 magic_string=None):
+    def __init__(self, path=None, timeout=None, magic_string=None):
         if not path:
             path = get_socket_path()
         self.path = path
         if timeout:
             self.timeout = timeout
-        if chunk_size:
-            self.chunk_size = chunk_size
         if magic_string:
             self.magic_string = magic_string
         # Socket initialization and connection
@@ -208,12 +203,17 @@ class Socket(object):
         successful. Returns None on failure.
         """
         try:
-            data = self.socket.recv(self.chunk_size)
+            data = self.socket.recv(self.struct_header_size)
             msg_magic, msg_length, msg_type = self.unpack_header(data)
+            
+            # Sanity check
+            assert msg_magic == self.magic_string.encode('utf-8') \
+                 , "Incorrect magic string received!"
+            
             msg_size = self.struct_header_size + msg_length
             # Keep receiving data until the whole message gets through
             while len(data) < msg_size:
-                data += self.socket.recv(msg_length)
+                data += self.socket.recv(msg_size - len(data))
             data = self.buffer + data
             return self.unpack(data)
         except socket.timeout:
