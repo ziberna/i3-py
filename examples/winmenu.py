@@ -25,7 +25,6 @@ def i3clients():
         windows = i3.filter(workspace, nodes=[])
         instances = {}
         # Adds windows and their ids to the clients dictionary
-        print(windows)
         for window in windows:
             win_str = '[%s] %s' % (workspace['name'], window['name'])
             # Appends an instance number if other instances are present
@@ -51,7 +50,6 @@ def win_menu(clients, l=10):
 
 if __name__ == '__main__':
     clients = i3clients()
-    print(clients)
     win_id = win_menu(clients)
     if win_id:
         i3.focus(con_id=win_id)
