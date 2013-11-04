@@ -17,8 +17,8 @@ def i3clients():
     Each window text is of format "[workspace] window title (instance number)"
     """
     clients = {}
-    for ws_num in range(1,11):
-        workspace = i3.filter(num=ws_num)
+    for ws_name in [w['name'] for w in i3.get_workspaces()]:
+        workspace = i3.filter(name = ws_name)
         if not workspace:
             continue
         workspace = workspace[0]
