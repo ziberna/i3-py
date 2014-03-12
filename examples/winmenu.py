@@ -33,7 +33,7 @@ def i3clients():
                 win_str = '%s (%d)' % (win_str, instances[win_str])
             else:
                 instances[win_str] = 1
-            clients[win_str] = window['id']
+            clients[win_str.rstrip()] = window['id']
     return clients
 
 def win_menu(clients, l=10):
