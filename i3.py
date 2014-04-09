@@ -127,30 +127,25 @@ class Socket(object):
     - path of the i3 socket. Path is retrieved from i3-wm itself via
       "i3.get_socket_path()" if not provided.
     - timeout in seconds
-    - chunk_size in bytes
     - magic_string as a safety string for i3-ipc. Set to 'i3-ipc' by default.
     """
-    magic_string = 'i3-ipc'  # safety string for i3-ipc
-    chunk_size = 1024  # in bytes
+    magic_string = str.encode('i3-ipc')  # safety string for i3-ipc
     timeout = 0.5  # in seconds
     buffer = b''  # byte string
     
-    def __init__(self, path=None, timeout=None, chunk_size=None,
-                 magic_string=None):
+    def __init__(self, path=None, timeout=None, magic_string=None):
         if not path:
             path = get_socket_path()
         self.path = path
         if timeout:
             self.timeout = timeout
-        if chunk_size:
-            self.chunk_size = chunk_size
         if magic_string:
             self.magic_string = magic_string
         # Socket initialization and connection
         self.initialize()
         self.connect()
         # Struct format initialization, length of magic string is in bytes
-        self.struct_header = '<%dsII' % len(self.magic_string.encode('utf-8'))
+        self.struct_header = '<%dsII' % len(self.magic_string)
         self.struct_header_size = struct.calcsize(self.struct_header)
     
     def initialize(self):
@@ -173,7 +168,7 @@ class Socket(object):
             except socket.error:
                 raise ConnectionError(path)
     
-    def get(self, msg_type, payload=''):
+    def get(self, msg_type, payload=str.encode('')):
         """
         Convenience method, calls "socket.send(msg_type, payload)" and
         returns data from "socket.receive()".
@@ -190,10 +185,10 @@ class Socket(object):
         payload = [event_type]
         if event:
             payload.append(event)
-        payload = json.dumps(payload)
+        payload = str.encode(json.dumps(payload))
         return self.get('subscribe', payload)
     
-    def send(self, msg_type, payload=''):
+    def send(self, msg_type, payload=str.encode('')):
         """
         Sends the given message type with given message by packing them
         and continuously sending bytes from the packed message.
@@ -208,12 +203,17 @@ class Socket(object):
         successful. Returns None on failure.
         """
         try:
-            data = self.socket.recv(self.chunk_size)
+            data = self.socket.recv(self.struct_header_size)
             msg_magic, msg_length, msg_type = self.unpack_header(data)
+            
+            # Sanity check
+            assert msg_magic == self.magic_string \
+                 , "Incorrect magic string received!"
+            
             msg_size = self.struct_header_size + msg_length
             # Keep receiving data until the whole message gets through
             while len(data) < msg_size:
-                data += self.socket.recv(msg_length)
+                data += self.socket.recv(msg_size - len(data))
             data = self.buffer + data
             return self.unpack(data)
         except socket.timeout:
@@ -226,14 +226,14 @@ class Socket(object):
         """
         msg_magic = self.magic_string
         # Get the byte count instead of number of characters
-        msg_length = len(payload.encode('utf-8'))
+        msg_length = len(payload)
         msg_type = parse_msg_type(msg_type)
-        # "struct.pack" returns byte string, decoding it for concatenation
-        msg_length = struct.pack('I', msg_length).decode('utf-8')
-        msg_type = struct.pack('I', msg_type).decode('utf-8')
-        message = '%s%s%s%s' % (msg_magic, msg_length, msg_type, payload)
+        # "struct.pack" returns byte string
+        msg_length = struct.pack('I', msg_length)
+        msg_type = struct.pack('I', msg_type)
+        message = msg_magic + msg_length + msg_type + payload
         # Encoding the message back to byte string
-        return message.encode('utf-8')
+        return message
     
     def unpack(self, data):
         """
@@ -245,8 +245,8 @@ class Socket(object):
         msg_size = self.struct_header_size + msg_length
         # Message shouldn't be any longer than the data
         if data_size >= msg_size:
-            payload = data[self.struct_header_size:msg_size].decode('utf-8')
-            payload = json.loads(payload)
+            payload = data[self.struct_header_size:msg_size]
+            payload = json.loads(payload.decode('utf-8'))
             self.buffer = data[msg_size:]
             return payload
         else:
@@ -365,7 +365,7 @@ def __call_cmd__(cmd):
         output = subprocess.check_output(cmd)
     except subprocess.CalledProcessError as error:
         output = error.output
-    output = output.decode('utf-8')  # byte string decoding
+    output = output  # byte string decoding
     return output.strip()
 
 
@@ -384,7 +384,7 @@ def default_socket(socket=None):
     return __socket__
 
 
-def msg(type, message=''):
+def msg(type, message=str.encode('')):
     """
     Takes a message type and a message itself.
     Talks to the i3 via socket and returns the response from the socket.
@@ -406,7 +406,7 @@ def __function__(type, message='', *args, **crit):
         criteria.update(crit2)
         if criteria:
             msg_full = '%s %s' % (container(**criteria), msg_full)
-        response = msg(type, msg_full)
+        response = msg(type, str.encode(msg_full))
         response = success(response)
         if isinstance(response, i3Exception):
             raise response
