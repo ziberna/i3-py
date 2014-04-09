@@ -188,7 +188,7 @@ class Socket(object):
         payload = str.encode(json.dumps(payload))
         return self.get('subscribe', payload)
     
-    def send(self, msg_type, payload=''):
+    def send(self, msg_type, payload=str.encode('')):
         """
         Sends the given message type with given message by packing them
         and continuously sending bytes from the packed message.
@@ -384,7 +384,7 @@ def default_socket(socket=None):
     return __socket__
 
 
-def msg(type, message=''):
+def msg(type, message=str.encode('')):
     """
     Takes a message type and a message itself.
     Talks to the i3 via socket and returns the response from the socket.
@@ -505,7 +505,7 @@ def filter(tree=None, function=None, **conditions):
     internally).
     """
     if tree is None:
-        tree = msg(str.encode('get_tree'))
+        tree = msg('get_tree')
     elif isinstance(tree, list):
         tree = {'list': tree}
     if function:
