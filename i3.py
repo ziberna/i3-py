@@ -245,7 +245,11 @@ class Socket(object):
         msg_size = self.struct_header_size + msg_length
         # Message shouldn't be any longer than the data
         if data_size >= msg_size:
-            payload = data[self.struct_header_size:msg_size].decode('utf-8')
+            try:
+                payload = data[self.struct_header_size:msg_size].decode('utf-8')
+            except UnicodeDecodeError:
+                payload = data[self.struct_header_size:msg_size].decode('latin-1')
+
             payload = json.loads(payload)
             self.buffer = data[msg_size:]
             return payload
