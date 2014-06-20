@@ -42,6 +42,7 @@ MSG_TYPES = [
     'get_tree',
     'get_marks',
     'get_bar_config',
+    'get_version'
 ]
 
 EVENT_TYPES = [

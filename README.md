@@ -35,7 +35,7 @@ Usage
 The basics
 ----------
 
-The communication with i3-wm is through sockets. There are 7 types of messages:
+The communication with i3-wm is through sockets. There are 8 types of messages:
 
  - command (0)
  - get_workspaces (1)
@@ -44,6 +44,7 @@ The communication with i3-wm is through sockets. There are 7 types of messages:
  - get_tree (4)
  - get_marks (5)
  - get_bar_config (6)
+ - get_version (7)
 
 You can control i3-wm with _command_ messages. Other message types return
 information about i3-wm without changing its behaviour.
