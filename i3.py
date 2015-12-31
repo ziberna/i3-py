@@ -17,6 +17,7 @@
 #======================================================================
 
 
+import os
 import sys
 import subprocess
 import json
@@ -441,11 +442,13 @@ def subscribe(event_type, event=None, callback=None):
 
 def get_socket_path():
     """
-    Gets the socket path via i3 command.
+    Gets the socket path from environment variable or via i3 command.
     """
-    cmd = ['i3', '--get-socketpath']
-    output = __call_cmd__(cmd)
-    return output
+    socket_path = os.environ.get('I3SOCK')
+    if not socket_path:
+        cmd = ['i3', '--get-socketpath']
+        socket_path = __call_cmd__(cmd)
+    return socket_path
 
 
 def success(response):
