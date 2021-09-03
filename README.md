@@ -9,7 +9,7 @@ Well, from [i3's website](http://i3wm.org/) itself:
 > advanced users and developers.
 
 i3-py contains tools for i3 users and Python developers. To avoid the confusion,
-I'll be refering to i3 as _i3-wm_ from here on.
+I'll be referring to i3 as _i3-wm_ from here on.
 
 
 Install
@@ -253,7 +253,7 @@ Exceptions
 There are three exceptions:
 
  - `i3.MessageTypeError`, raised when you use unavailable message type
- - `i3.EventTypeError`, raised when you use unavaible event type
+ - `i3.EventTypeError`, raised when you use unavailable event type
  - `i3.MessageError`, raised when i3 sends back an error (the exception contains
    that error string)
 

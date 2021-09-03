@@ -372,7 +372,7 @@ def __call_cmd__(cmd):
 __socket__ = None
 def default_socket(socket=None):
     """
-    Returns i3.Socket object, which was initiliazed once with default values
+    Returns i3.Socket object, which was initialized once with default values
     if no argument is given.
     Otherwise sets the default socket to the given socket.
     """
